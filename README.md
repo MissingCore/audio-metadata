@@ -10,13 +10,13 @@ An audio file metadata reader built for **React Native** supporting tags used in
 
 ## Installation
 
-```
+```sh
 expo install @missingcore/audio-metadata
 ```
 
 or
 
-```
+```sh
 npm i @missingcore/audio-metadata
 ```
 
