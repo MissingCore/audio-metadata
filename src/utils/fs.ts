@@ -1,5 +1,4 @@
 import { DependencyError } from './errors';
-import { checkPackage } from './packages';
 
 type StatResult =
   | { exists: false; size?: never }
@@ -11,19 +10,21 @@ type StatResult =
  * @param fileUri The `file://` URI to the file.
  */
 export async function getFileStat(fileUri: string): Promise<StatResult> {
-  if (await checkPackage('expo-file-system')) {
+  try {
     const { getInfoAsync } = await import('expo-file-system');
     const result = await getInfoAsync(fileUri);
     if (!result.exists) return { exists: false };
     return { exists: true, size: result.size };
-  } else if (await checkPackage('@dr.pogodin/react-native-fs')) {
+  } catch {}
+
+  try {
     const { exists, stat } = await import('@dr.pogodin/react-native-fs');
     if (!(await exists(fileUri))) return { exists: false };
     const { size } = await stat(fileUri);
     return { exists: true, size };
-  } else {
-    throw new DependencyError();
-  }
+  } catch {}
+
+  throw new DependencyError();
 }
 
 /**
@@ -35,7 +36,7 @@ export async function getFileStat(fileUri: string): Promise<StatResult> {
  * @param position The starting read position in bytes.
  */
 export async function read(fileUri: string, length: number, position: number) {
-  if (await checkPackage('expo-file-system')) {
+  try {
     const { EncodingType, readAsStringAsync } = await import(
       'expo-file-system'
     );
@@ -44,10 +45,12 @@ export async function read(fileUri: string, length: number, position: number) {
       length,
       position,
     });
-  } else if (await checkPackage('@dr.pogodin/react-native-fs')) {
+  } catch {}
+
+  try {
     const { read: rnfsRead } = await import('@dr.pogodin/react-native-fs');
     return rnfsRead(fileUri, length, position, 'base64');
-  } else {
-    throw new DependencyError();
-  }
+  } catch {}
+
+  throw new DependencyError();
 }
