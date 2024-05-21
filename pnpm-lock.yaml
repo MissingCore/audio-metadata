@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  fastestsmallesttextencoderdecoder:
+    specifier: ^1.0.22
+    version: 1.0.22
+
 devDependencies:
   '@commitlint/config-conventional':
     specifier: ^17.0.2
@@ -20,6 +25,9 @@ devDependencies:
   '@release-it/conventional-changelog':
     specifier: ^5.0.0
     version: 5.1.1(release-it@15.11.0)
+  '@types/fastestsmallesttextencoderdecoder':
+    specifier: ^1.0.2
+    version: 1.0.2
   '@types/jest':
     specifier: ^29.5.5
     version: 29.5.12
@@ -3493,6 +3501,10 @@ packages:
       '@babel/types': 7.24.5
     dev: true
 
+  /@types/fastestsmallesttextencoderdecoder@1.0.2:
+    resolution: {integrity: sha512-0Md9qUxGnQ9uJ0NjsA70Y0NHIl3NwfBO1d8CGXK0zhczRL85CXJ3M0JZsmCNQ0WcAbt08FuT4U1G1mWQqgOsUg==}
+    dev: true
+
   /@types/graceful-fs@4.1.9:
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
     dependencies:
@@ -6398,6 +6410,10 @@ packages:
     dependencies:
       strnum: 1.0.5
     dev: true
+
+  /fastestsmallesttextencoderdecoder@1.0.22:
+    resolution: {integrity: sha512-Pb8d48e+oIuY4MaM64Cd7OW1gt4nxCHs7/ddPPZ/Ic3sg8yVGM7O9wDvZ7us6ScaUupzM+pfBolwtYhN1IxBIw==}
+    dev: false
 
   /fastq@1.17.1:
     resolution: {integrity: sha512-sRVD3lWVIXWg6By68ZN7vho9a1pQcN/WBFaAAsDDFzlJjvoGx0P8z7V1t72grFJfJhu3YPZBuu25f7Kaw2jN1w==}

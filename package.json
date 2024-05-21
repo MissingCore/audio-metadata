@@ -51,12 +51,16 @@
     "url": "https://github.com/MissingCore/audio-metadata/issues"
   },
   "homepage": "https://github.com/MissingCore/audio-metadata#readme",
+  "dependencies": {
+    "fastestsmallesttextencoderdecoder": "^1.0.22"
+  },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
     "@dr.pogodin/react-native-fs": "^2.25.0",
     "@evilmartians/lefthook": "^1.5.0",
     "@react-native/eslint-config": "^0.73.1",
     "@release-it/conventional-changelog": "^5.0.0",
+    "@types/fastestsmallesttextencoderdecoder": "^1.0.2",
     "@types/jest": "^29.5.5",
     "@types/react": "^18.2.44",
     "commitlint": "^17.0.2",
