@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "rootDir": ".",
     "paths": {
-      "@missingcore/audio-metadata": ["./src"]
+      "@missingcore/audio-metadata": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
@@ -23,7 +23,5 @@
     "strict": true,
     "target": "esnext",
     "verbatimModuleSyntax": true
-  },
-  "exclude": ["example"],
-  "include": ["src"]
+  }
 }
