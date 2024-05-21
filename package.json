@@ -100,7 +100,12 @@
     "output": "lib",
     "targets": [
       "module",
-      "typescript"
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
     ]
   }
 }

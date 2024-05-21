@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "rootDir": ".",
+    "baseUrl": ".",
     "paths": {
       "@missingcore/audio-metadata": ["./src/index"]
     },

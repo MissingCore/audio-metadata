@@ -1,7 +1,7 @@
-import { AudioFileReader } from 'src/utils/AudioFileReader';
-import type { Encoding } from 'src/utils/Buffer';
-import { Buffer } from 'src/utils/Buffer';
-import { arrayIncludes } from 'src/utils/object';
+import { AudioFileReader } from '../utils/AudioFileReader';
+import type { Encoding } from '../utils/Buffer';
+import { Buffer } from '../utils/Buffer';
+import { arrayIncludes } from '../utils/object';
 
 /*
   Logic Based on the Following References:

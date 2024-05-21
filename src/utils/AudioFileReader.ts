@@ -1,4 +1,4 @@
-import { BUFFER_SIZE } from 'src/constants/config';
+import { BUFFER_SIZE } from '../constants/config';
 import { Buffer } from './Buffer';
 import { getFileStat, read } from './fs';
 
