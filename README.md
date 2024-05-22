@@ -1,6 +1,6 @@
 # @missingcore/audio-metadata
 
-An audio file metadata reader built for **React Native** supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
+An audio file metadata reader built for **React Native** (mobile only) supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
 
 ## Supported Files
 
@@ -15,7 +15,7 @@ An audio file metadata reader built for **React Native** supporting tags used in
 >
 > In the future, we may support older versions with a peer dependency of `base-64`.
 
-This library supports using either [`expo-file-system`](https://docs.expo.dev/versions/latest/sdk/filesystem/) and [`@dr.pogodin/react-native-fs`](https://github.com/birdofpreyru/react-native-fs) (a more actively maintained fork of [`react-native-fs`](https://github.com/itinance/react-native-fs)).
+This library supports using either [`expo-file-system`](https://docs.expo.dev/versions/latest/sdk/filesystem/) or [`@dr.pogodin/react-native-fs`](https://github.com/birdofpreyru/react-native-fs) (a more actively maintained fork of [`react-native-fs`](https://github.com/itinance/react-native-fs)).
 
 > **Note:** Using `@dr.pogodin/react-native-fs` with `expo` requires a **bare** workflow.
 

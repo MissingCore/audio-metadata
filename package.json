@@ -26,6 +26,8 @@
     "!**/.*"
   ],
   "scripts": {
+    "example": "pnpm --filter @missingcore/audio-metadata-example run",
+    "bootstrap": "pnpm install && pnpm example android",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -86,6 +88,9 @@
   },
   "peerDependenciesMeta": {
     "@dr.pogodin/react-native-fs": {
+      "optional": true
+    },
+    "@types/react": {
       "optional": true
     },
     "expo-file-system": {
