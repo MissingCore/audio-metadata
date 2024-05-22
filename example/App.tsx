@@ -131,7 +131,7 @@ export function App() {
                   style={styles.image}
                 />
               </View>
-              <View>
+              <View style={styles.infoContainer}>
                 <Text numberOfLines={1}>{item.name}</Text>
                 <Text numberOfLines={1}>{item.artist}</Text>
                 {item.album && <Text numberOfLines={1}>{item.album}</Text>}
@@ -176,5 +176,8 @@ const styles = StyleSheet.create({
     height: 150,
     backgroundColor: '#bdbdbd',
     borderRadius: 12,
+  },
+  infoContainer: {
+    flex: 1,
   },
 });
