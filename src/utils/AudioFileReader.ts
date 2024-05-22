@@ -1,6 +1,6 @@
 import { BUFFER_SIZE } from '../constants/config';
 import { Buffer } from './Buffer';
-import { getFileStat, read } from './fs';
+import { getFileStat, read } from '../libs/fs';
 
 /** Read a file encoded in base64, storing the contents in a buffer. */
 export class AudioFileReader {
