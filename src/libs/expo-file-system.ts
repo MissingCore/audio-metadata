@@ -1,10 +1,9 @@
-let EFS;
+import type { FileSystem } from './expo-file-system.types';
+
+let ExpoFileSystem: FileSystem | undefined;
 
 try {
-  EFS = require('expo-file-system');
-} catch (err) {
-  // do nothing
-  console.log(`[expo-file-system]`, err);
-}
+  ExpoFileSystem = require('expo-file-system');
+} catch {}
 
-export default EFS;
+export default ExpoFileSystem;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import ExpoFileSystem from './expo-file-system';
 import ReactNativeFS from './react-native-fs';
 
@@ -19,7 +18,7 @@ export async function getFileStat(fileUri: string): Promise<StatResult> {
     const { size } = await ReactNativeFS.stat(fileUri);
     return { exists: true, size };
   } else if (ExpoFileSystem) {
-    const result = await ExpoFileSystem.getInfoAsync(fileUri);
+    const result = await ExpoFileSystem.getInfoAsync(fileUri, { size: true });
     if (!result.exists) return { exists: false };
     return { exists: true, size: result.size };
   } else {
@@ -35,11 +34,7 @@ export async function getFileStat(fileUri: string): Promise<StatResult> {
  * @param length The number of bytes to read.
  * @param position The starting read position in bytes.
  */
-export async function read(
-  fileUri: string,
-  length: number,
-  position: number
-): Promise<string> {
+export async function read(fileUri: string, length: number, position: number) {
   if (ReactNativeFS) {
     return ReactNativeFS.read(fileUri, length, position, 'base64');
   } else if (ExpoFileSystem) {

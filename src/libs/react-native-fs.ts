@@ -1,10 +1,9 @@
-let RNFS;
+import type { FileSystem } from './react-native-fs.types';
+
+let ReactNativeFS: FileSystem | undefined;
 
 try {
-  RNFS = require('@dr.pogodin/react-native-fs');
-} catch (err) {
-  // do nothing
-  console.log(`[@dr.pogodin/react-native-fs]`, err);
-}
+  ReactNativeFS = require('@dr.pogodin/react-native-fs');
+} catch {}
 
-export default RNFS;
+export default ReactNativeFS;
