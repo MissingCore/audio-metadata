@@ -2,6 +2,8 @@
 
 An audio file metadata reader built for **React Native** (mobile only) supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
 
+> Supports React Native's **"New Architecture"**.
+
 ## Supported Files
 
 | Extension | Format      | Additional Information |
