@@ -1,9 +1,10 @@
-import { BUFFER_SIZE } from '../constants';
 import { Buffer } from './Buffer';
+import { FileError } from './errors';
+import { BUFFER_SIZE } from '../constants';
 import { getFileStat, read } from '../libs/fs';
 
 /** Read a file encoded in base64, storing the contents in a buffer. */
-export class AudioFileReader {
+export class FileReader {
   #fileUri = '';
   dataSize = 0;
 
@@ -19,7 +20,7 @@ export class AudioFileReader {
   async init() {
     const fileInfo = await getFileStat(this.#fileUri);
     // File should exist, so below error shouldn't be thrown.
-    if (!fileInfo.exists) throw new Error("File doesn't exist.");
+    if (!fileInfo.exists) throw new FileError("File doesn't exist.");
     this.dataSize = fileInfo.size;
     this.filePosition = 0;
     this.finished = false;

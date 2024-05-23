@@ -6,3 +6,10 @@ export class DependencyError extends Error {
       'Neither `expo-file-system` or `@dr.pogodin/react-native-fs` is installed.';
   }
 }
+export class FileError extends Error {
+  constructor(message: string) {
+    super();
+    this.name = 'FileError';
+    this.message = message;
+  }
+}

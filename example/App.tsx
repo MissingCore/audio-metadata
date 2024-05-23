@@ -14,7 +14,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { getMusicInfoAsync } from '@missingcore/audio-metadata';
+import { getAudioMetadata } from '@missingcore/audio-metadata';
 
 import { isFulfilled } from './utils/promise';
 
@@ -38,11 +38,14 @@ async function getTracks() {
     })
   ).assets.filter((a) => a.filename.endsWith('.mp3'));
 
+  const wantedTags = withArtwork
+    ? (['album', 'artist', 'artwork', 'name', 'track', 'year'] as const)
+    : (['album', 'artist', 'name', 'track', 'year'] as const);
+
   const tracksMetadata = await Promise.allSettled(
     mp3Files.map(async ({ id, uri }) => ({
       id,
-      ...(await getMusicInfoAsync(uri, true)),
-      ...(withArtwork ? await getMusicInfoAsync(uri, false) : {}),
+      ...(await getAudioMetadata(uri, wantedTags)).metadata,
     }))
   );
 
@@ -126,7 +129,7 @@ export function App() {
             <View style={styles.metadataContainer}>
               <View style={styles.image}>
                 <Image
-                  source={item.cover}
+                  source={item.artwork}
                   contentFit="cover"
                   style={styles.image}
                 />

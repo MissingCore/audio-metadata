@@ -1,4 +1,10 @@
-import { AudioFileReader } from '../utils/AudioFileReader';
+import type {
+  MetadataExcerpt,
+  MetadataKey,
+  MetadataKeys,
+} from '../MetadataExtractor';
+import { FileError } from '../utils/errors';
+import { FileReader } from '../utils/FileReader';
 import type { Encoding } from '../utils/Buffer';
 import { Buffer } from '../utils/Buffer';
 import { arrayIncludes } from '../utils/object';
@@ -16,26 +22,36 @@ import { arrayIncludes } from '../utils/object';
     - https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.4.0-frames.html
 */
 const FrameTypes = {
-  // `TYER` is ID3v2.3 "Year" & `TDRC` is ID3v2.4 "Recording Time"
   text: ['TIT2', 'TPE1', 'TALB', 'TRCK', 'TYER', 'TDRC'],
   picture: ['APIC'],
 } as const;
 
 type TextFrameId = (typeof FrameTypes.text)[number];
 type PictureFrameId = (typeof FrameTypes.picture)[number];
+type FrameId = TextFrameId | PictureFrameId;
+
+const FrameMetadataMap: Record<FrameId, MetadataKey> = {
+  TALB: 'album',
+  TPE1: 'artist',
+  APIC: 'artwork',
+  TIT2: 'name',
+  TRCK: 'track',
+  TDRC: 'year', // ID3v2.4 "Recording Time"
+  TYER: 'year', // ID3v2.3 "Year"
+};
 
 /**
  * Reads the ID3v2.3 or ID3v2.4 tag (without flags) that are stored at
  * the beginning of a MP3 file.
  */
-export class ID3v2Reader extends AudioFileReader {
-  metadataOnly = true;
-  frames = {} as Record<TextFrameId | PictureFrameId, string | undefined>;
+export class ID3v2Reader extends FileReader {
+  wantedKeys: MetadataKeys = [];
+  frames = {} as Record<FrameId, string>;
   version = 0; // The minor version of the spec (should be `3` or `4`).
 
-  constructor(uri: string, metadataOnly: boolean) {
+  constructor(uri: string, options: MetadataKeys) {
     super(uri);
-    this.metadataOnly = metadataOnly;
+    this.wantedKeys = options;
   }
 
   /** Get MP3 metadata. */
@@ -48,21 +64,17 @@ export class ID3v2Reader extends AudioFileReader {
       while (!this.finished) await this.processFrame();
 
       // Return the results.
-      const { APIC, TALB, TDRC, TIT2, TPE1, TRCK, TYER } = this.frames;
-      if (this.metadataOnly) {
-        if (!TIT2) throw new Error('Has no name.');
-        if (!TPE1) throw new Error('Has no artist.');
-        const trackNumber = TRCK ? Number(TRCK.split('/')[0]) : null;
-        return {
-          name: TIT2,
-          artist: TPE1,
-          album: TALB ?? null,
-          track: trackNumber,
-          year: Number(TYER ?? TDRC?.slice(0, 4)) || null,
-        };
-      } else {
-        return { cover: APIC ?? null };
-      }
+      return Object.fromEntries(
+        Object.entries(this.frames).map(([key, value]) => {
+          const metadataKey = FrameMetadataMap[key as FrameId];
+
+          let valAsNum: number | undefined;
+          if (metadataKey === 'track') valAsNum = Number(value.split('/')[0]);
+          else if (metadataKey === 'year') valAsNum = Number(value.slice(0, 4));
+
+          return [metadataKey, valAsNum && !isNaN(valAsNum) ? valAsNum : value];
+        })
+      ) as MetadataExcerpt<typeof this.wantedKeys>;
     } catch (err) {
       throw err;
     }
@@ -73,12 +85,12 @@ export class ID3v2Reader extends AudioFileReader {
     // First 3 bytes of the header should encode the string "ID3".
     let chunk = await this.read(3);
     if (Buffer.bytesToString(chunk) !== 'ID3')
-      throw new Error('Invalid file format.');
+      throw new FileError('Invalid file format.');
 
     // Next 2 bytes encodes the major version & revision of the ID3 specification.
     chunk = await this.read(2);
     this.version = Buffer.bytesToInt([chunk[0]]);
-    if (this.version === 2) throw new Error('Unsupported ID3 version.');
+    if (this.version === 2) throw new FileError('Unsupported ID3 version.');
 
     // Next byte is treated as flags.
     await this.skip(1);
@@ -113,20 +125,20 @@ export class ID3v2Reader extends AudioFileReader {
 
       // Process the frame once we identify the frame type & exit early
       // if we got all the data we needed.
-      if (this.metadataOnly) {
-        if (arrayIncludes(FrameTypes.text, frameId)) {
-          await this.processTextFrame(frameId, frameSize);
-          if (Object.keys(this.frames).length === 5) this.finished = true;
-        } else {
-          await this.skip(frameSize);
-        }
+      const isWanted = arrayIncludes(
+        this.wantedKeys,
+        FrameMetadataMap[frameId as FrameId]
+      );
+      if (isWanted && arrayIncludes(FrameTypes.text, frameId)) {
+        await this.processTextFrame(frameId, frameSize);
+      } else if (isWanted && arrayIncludes(FrameTypes.picture, frameId)) {
+        await this.processPictureFrame(frameSize);
       } else {
-        if (arrayIncludes(FrameTypes.picture, frameId)) {
-          await this.processPictureFrame(frameSize);
-          if (Object.keys(this.frames).length === 1) this.finished = true;
-        } else {
-          await this.skip(frameSize);
-        }
+        await this.skip(frameSize);
+      }
+
+      if (Object.keys(this.frames).length === this.wantedKeys.length) {
+        this.finished = true;
       }
     }
   }
