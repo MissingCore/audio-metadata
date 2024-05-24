@@ -1,6 +1,6 @@
 import { ID3v2Reader } from './ID3v2Reader';
 
-import type { MetadataKeys, ResourceResult } from './types';
+import type { MetadataKeys, MetadataResponse } from './types';
 import { FileError } from '../utils/errors';
 
 /**
@@ -10,7 +10,7 @@ import { FileError } from '../utils/errors';
 export async function getAudioMetadata<TOptions extends MetadataKeys>(
   uri: string,
   options: TOptions
-): Promise<ResourceResult<TOptions>> {
+): Promise<MetadataResponse<TOptions>> {
   if (uri.endsWith('mp3')) {
     const data = await new ID3v2Reader(uri, options).getMetadata();
     return {

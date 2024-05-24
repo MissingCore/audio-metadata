@@ -16,9 +16,9 @@ export class Buffer {
   #cursor = 0;
 
   /** Set the buffer and reset the cursor. */
-  setBuffer(buffer: Uint8Array) {
+  setBuffer(buffer: Uint8Array, offset = 0) {
     this.#buffer = buffer;
-    this.#cursor = 0;
+    this.#cursor = offset;
   }
 
   /** Get stored buffer. */

@@ -6,9 +6,9 @@ An audio file metadata reader built for **React Native** (mobile only) supportin
 
 ## Supported Files
 
-| Extension | Format      | Additional Information |
-| --------- | ----------- | ---------------------- |
-| MP3       | ID3v2.(3/4) | No flags supported.    |
+| Extension | Format | Additional Information                                      |
+| --------- | ------ | ----------------------------------------------------------- |
+| MP3       | ID3v2  | - Unsynchronisation supported<br/>- All other flags ignored |
 
 ## Installation
 

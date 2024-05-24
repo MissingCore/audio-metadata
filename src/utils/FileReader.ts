@@ -1,7 +1,16 @@
 import { Buffer } from './Buffer';
 import { FileError } from './errors';
-import { BUFFER_SIZE } from '../constants';
 import { getFileStat, read } from '../libs/fs';
+
+type InitBuffer = {
+  /** Number of bytes needed to be read in order to determine the size of the buffer. */
+  bytes: number;
+  /**
+   * Returns the size of the buffer we need. Make sure to re-include the bytes
+   * used to get this value if we need to apply some other calculations on it.
+   */
+  getBufferSize: () => number;
+};
 
 /** Read a file encoded in base64, storing the contents in a buffer. */
 export class FileReader {
@@ -17,45 +26,39 @@ export class FileReader {
   }
 
   /** Initialize contents of this class. */
-  async init() {
+  async init({ bytes, getBufferSize }: InitBuffer) {
     const fileInfo = await getFileStat(this.#fileUri);
     // File should exist, so below error shouldn't be thrown.
     if (!fileInfo.exists) throw new FileError("File doesn't exist.");
-    this.dataSize = fileInfo.size;
-    this.filePosition = 0;
     this.finished = false;
-    await this.loadFileToBuffer();
-  }
 
-  /** Read a chunk of the base64 representation of the MP3 file. */
-  async loadFileToBuffer() {
-    const data = await read(this.#fileUri, BUFFER_SIZE, this.filePosition);
+    /* Determine all the bytes we need to read from the file. */
+    let data = await read(this.#fileUri, bytes, 0);
     this.buffer.setBuffer(Buffer.base64ToBuffer(data));
-    this.filePosition += BUFFER_SIZE;
+    const bufferSize = getBufferSize();
+    this.dataSize = bufferSize;
+    // Populate buffer with all the data it needs.
+    data = await read(this.#fileUri, bufferSize, 0);
+    this.buffer.setBuffer(Buffer.base64ToBuffer(data));
+    this.filePosition = bufferSize;
   }
 
   /** Returns an array of bytes from the buffer. */
-  async read(length: number) {
+  read(length: number) {
     const chunk: number[] = [];
     for (let i = 0; i < length; i++) {
-      if (this.buffer.eof) {
-        if (this.trulyFinished) break;
-        await this.loadFileToBuffer();
-      }
+      if (this.#areWeDone()) break;
       chunk.push(this.buffer.readUInt8());
     }
     return chunk;
   }
 
   /** Read buffer until we hit a `null`. */
-  async readTilNull() {
+  readTilNull() {
     let byte: number | null = null;
     const chunk: number[] = [];
     while (byte !== 0) {
-      if (this.buffer.eof) {
-        if (this.trulyFinished) break;
-        await this.loadFileToBuffer();
-      }
+      if (this.#areWeDone()) break;
       byte = this.buffer.readUInt8();
       chunk.push(byte);
     }
@@ -63,17 +66,39 @@ export class FileReader {
   }
 
   /** Skip bytes in the buffer. */
-  async skip(length: number) {
-    const remaining = length - this.buffer.move(length);
-    if (remaining > 0 && !this.trulyFinished) {
-      this.filePosition += remaining;
-      await this.loadFileToBuffer();
-    }
+  skip(length: number) {
+    this.buffer.move(length);
+    this.#areWeDone();
   }
 
-  /** Boolean whether we finished reading all data in the file. */
-  get trulyFinished() {
-    if (this.filePosition < this.dataSize) return false;
+  /**
+   * Apply un-unsynchronisation to the buffer. Returns the new size of the
+   * content we've applied un-unsynchronisation to.
+   */
+  unsynchBuffer(offset: number, length?: number) {
+    const size = length || this.buffer.length - offset;
+    const data = [...this.buffer.buffer.slice(offset, offset + size)];
+    for (let i = 0; i < data.length - 1; i++) {
+      if (data[i] === 0xff && data[i + 1] === 0x00) {
+        data.splice(i + 1, 1);
+      }
+    }
+
+    this.buffer.setBuffer(
+      new Uint8Array([
+        ...this.buffer.buffer.slice(0, offset),
+        ...data,
+        ...this.buffer.buffer.slice(offset + size),
+      ]),
+      offset
+    );
+
+    return data.length;
+  }
+
+  /** Checks if we reached the end of the buffer and updates `finished` if we are. */
+  #areWeDone() {
+    if (!this.buffer.eof) return false;
     this.finished = true;
     return true;
   }

@@ -16,7 +16,7 @@ export type MetadataExcerpt<TKeys extends MetadataKeys> = Partial<
   Pick<AudioMetadata, TKeys[number]>
 >;
 
-export type ResourceResult<TKeys extends MetadataKeys> = {
+export type MetadataResponse<TKeys extends MetadataKeys> = {
   fileType: AudioFileType;
   format: string;
   metadata: MetadataExcerpt<TKeys>;
