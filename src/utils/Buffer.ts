@@ -67,6 +67,11 @@ export class Buffer {
     return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   }
 
+  /** Represent byte as binary. */
+  static byteToBinary(byte: number) {
+    return byte.toString(2).padStart(8, '0');
+  }
+
   /** Convert bytes into a base64 string. */
   static bytesToBase64(bytes: number[]) {
     return btoa(bytes.reduce((s, byte) => s + String.fromCharCode(byte), ''));
