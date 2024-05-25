@@ -1,14 +1,17 @@
 import type { MetadataExcerpt, MetadataKey, MetadataKeys } from './types';
-import { FileError } from '../utils/errors';
-import { FileReader } from '../utils/FileReader';
 import type { Encoding } from '../utils/Buffer';
 import { Buffer } from '../utils/Buffer';
+import { FileError } from '../utils/errors';
+import { FileReader } from '../utils/FileReader';
 import { arrayIncludes } from '../utils/object';
 
 /*
-  Logic Based on the Following References:
-    - https://gigamonkeys.com/book/practical-an-id3-parser
+  Useful documentation:
+    - https://id3.org/Developer%20Information
     - https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.4.0-structure.html
+
+  Inspiration:
+    - https://gigamonkeys.com/book/practical-an-id3-parser
     - https://github.com/MehrabSp/expo-music-info-2
 */
 
@@ -111,7 +114,7 @@ export class ID3v2Reader extends FileReader {
   processHeader() {
     // First 3 bytes should encode the string "ID3".
     if (Buffer.bytesToString(this.read(3)) !== 'ID3')
-      throw new FileError('Not an ID3 tag.');
+      throw new FileError('Not an ID3v2 tag.');
 
     // Next 2 bytes encodes the major version & revision.
     const [version] = this.read(2);
