@@ -1,8 +1,8 @@
-import type { MetadataExcerpt, MetadataKeys } from './types';
-import { getFileStat, read } from '../libs/fs';
-import { Buffer } from '../utils/Buffer';
-import { FileError } from '../utils/errors';
-import { FileReader } from '../utils/FileReader';
+import type { MetadataExcerpt, MetadataKeys } from '../types';
+import { getFileStat, read } from '../../libs/fs';
+import { Buffer } from '../../utils/Buffer';
+import { FileError } from '../../utils/errors';
+import { FileReader } from '../../utils/FileReader';
 
 /*
   Useful documentation:
@@ -54,7 +54,7 @@ export class ID3v1Reader extends FileReader {
     const name = Buffer.bytesToString(this.read(30)) || undefined;
     const artist = Buffer.bytesToString(this.read(30)) || undefined;
     const album = Buffer.bytesToString(this.read(30)) || undefined;
-    const year = Buffer.bytesToInt(this.read(4)) || undefined;
+    const year = Number(Buffer.bytesToString(this.read(4))) || undefined;
     const _comment = this.read(30);
     const version = _comment[28] === 0 && _comment[29] !== 0 ? '1.1' : '1';
     const track = version === '1.1' ? _comment[29] : undefined;

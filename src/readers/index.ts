@@ -1,4 +1,4 @@
-import { ID3v2Reader } from './ID3v2Reader';
+import { readMP3Metadata } from './ID3Reader';
 
 import type { MetadataKeys, MetadataResponse } from './types';
 import { FileError } from '../utils/errors';
@@ -12,12 +12,7 @@ export async function getAudioMetadata<TOptions extends MetadataKeys>(
   options: TOptions
 ): Promise<MetadataResponse<TOptions>> {
   if (uri.endsWith('mp3')) {
-    const data = await new ID3v2Reader(uri, options).getMetadata();
-    return {
-      fileType: 'mp3',
-      format: `ID3v2.${data.version}`,
-      metadata: data.metadata,
-    };
+    return await readMP3Metadata(uri, options);
   }
 
   throw new FileError('File is currently not supported.');

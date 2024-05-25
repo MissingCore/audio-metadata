@@ -1,9 +1,9 @@
-import type { MetadataExcerpt, MetadataKey, MetadataKeys } from './types';
-import type { Encoding } from '../utils/Buffer';
-import { Buffer } from '../utils/Buffer';
-import { FileError } from '../utils/errors';
-import { FileReader } from '../utils/FileReader';
-import { arrayIncludes } from '../utils/object';
+import type { MetadataExcerpt, MetadataKey, MetadataKeys } from '../types';
+import type { Encoding } from '../../utils/Buffer';
+import { Buffer } from '../../utils/Buffer';
+import { FileError } from '../../utils/errors';
+import { FileReader } from '../../utils/FileReader';
+import { arrayIncludes } from '../../utils/object';
 
 /*
   Useful documentation:
