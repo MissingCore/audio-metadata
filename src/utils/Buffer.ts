@@ -102,7 +102,9 @@ export class Buffer {
       /* [UTF-8] */
       case 3: {
         const tdInstant = new TextDecoder();
-        return tdInstant.decode(Uint8Array.from(bytes));
+        // Make sure to remove null byte (`\u0000`) at end of string to
+        // make equality tests work as expected.
+        return tdInstant.decode(Uint8Array.from(bytes)).replace(/\0.*$/g, '');
       }
       /* [ISO-8859-1] — Only ASCII printable characters */
       default:
