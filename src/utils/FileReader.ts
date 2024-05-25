@@ -1,20 +1,9 @@
 import { Buffer } from './Buffer';
-import { FileError } from './errors';
-import { getFileStat, read } from '../libs/fs';
-
-type InitBuffer = {
-  /** Number of bytes needed to be read in order to determine the size of the buffer. */
-  bytes: number;
-  /**
-   * Returns the size of the buffer we need. Make sure to re-include the bytes
-   * used to get this value if we need to apply some other calculations on it.
-   */
-  getBufferSize: () => number;
-};
+import { read } from '../libs/fs';
 
 /** Read a file encoded in base64, storing the contents in a buffer. */
 export class FileReader {
-  #fileUri = '';
+  fileUri = '';
   dataSize = 0;
 
   buffer = new Buffer();
@@ -22,25 +11,16 @@ export class FileReader {
   finished = false;
 
   constructor(uri: string) {
-    this.#fileUri = uri;
+    this.fileUri = uri;
   }
 
-  /** Initialize contents of this class. */
-  async init({ bytes, getBufferSize }: InitBuffer) {
-    const fileInfo = await getFileStat(this.#fileUri);
-    // File should exist, so below error shouldn't be thrown.
-    if (!fileInfo.exists) throw new FileError("File doesn't exist.");
+  /** Initialize the buffer with all the data we need from the given spot in a file. */
+  async initDataFrom({ size, offset = 0 }: { size: number; offset?: number }) {
+    const data = await read(this.fileUri, size, offset);
+    this.buffer.setBuffer(Buffer.base64ToBuffer(data));
+    this.dataSize = size;
+    this.filePosition = offset + size;
     this.finished = false;
-
-    /* Determine all the bytes we need to read from the file. */
-    let data = await read(this.#fileUri, bytes, 0);
-    this.buffer.setBuffer(Buffer.base64ToBuffer(data));
-    const bufferSize = getBufferSize();
-    this.dataSize = bufferSize;
-    // Populate buffer with all the data it needs.
-    data = await read(this.#fileUri, bufferSize, 0);
-    this.buffer.setBuffer(Buffer.base64ToBuffer(data));
-    this.filePosition = bufferSize;
   }
 
   /** Returns an array of bytes from the buffer. */

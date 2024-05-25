@@ -19,21 +19,12 @@ export async function readMP3Metadata<TOptions extends MetadataKeys>(
     ...Buffer.base64ToBuffer(await read(uri, 3, 0)),
   ]);
 
-  let result: MetadataResponse<TOptions> = {
-    fileType: 'mp3',
-    format: '',
-    metadata: {},
-  };
-
+  let data = {} as Omit<MetadataResponse<TOptions>, 'fileType'>;
   if (identifier === 'ID3') {
-    const data = await new ID3v2Reader(uri, options).getMetadata();
-    result.format = `ID3v2.${data.version}`;
-    result.metadata = data.metadata;
+    data = await new ID3v2Reader(uri, options).getMetadata();
   } else {
-    const data = await new ID3v1Reader(uri, options).getMetadata();
-    result.format = `ID3v${data.version}`;
-    result.metadata = data.metadata;
+    data = await new ID3v1Reader(uri, options).getMetadata();
   }
 
-  return result;
+  return { fileType: 'mp3', ...data };
 }

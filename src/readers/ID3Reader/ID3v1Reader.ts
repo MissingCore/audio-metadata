@@ -1,5 +1,5 @@
 import type { MetadataExcerpt, MetadataKeys } from '../types';
-import { getFileStat, read } from '../../libs/fs';
+import { getFileStat } from '../../libs/fs';
 import { Buffer } from '../../utils/Buffer';
 import { FileError } from '../../utils/errors';
 import { FileReader } from '../../utils/FileReader';
@@ -11,35 +11,22 @@ import { FileReader } from '../../utils/FileReader';
 
 /** Reads ID3v1 metadata stored at the end of a MP3 file. */
 export class ID3v1Reader extends FileReader {
-  #_fileUri = '';
   wantedKeys: MetadataKeys = [];
 
   constructor(uri: string, options: MetadataKeys) {
     super(uri);
-    this.#_fileUri = uri;
     this.wantedKeys = options;
   }
 
   /** Get MP3 metadata. */
   async getMetadata() {
-    await this._internalInit();
+    /* Buffer initialization. */
+    const fileSize = (await getFileStat(this.fileUri)).size!;
+    await this.initDataFrom({ size: 128, offset: fileSize - 128 });
 
     // Process the file & return results.
     this.processHeader();
     return this.processData();
-  }
-
-  /** Initialize the buffer with custom logic instead of `FileReader.init`. */
-  async _internalInit() {
-    const fileInfo = await getFileStat(this.#_fileUri);
-    // File should exist, so below error shouldn't be thrown.
-    if (!fileInfo.exists) throw new FileError("File doesn't exist.");
-
-    /* Get the 128 bytes of data used by ID3v1. */
-    const data = await read(this.#_fileUri, 128, fileInfo.size - 128);
-    this.buffer.setBuffer(Buffer.base64ToBuffer(data));
-    this.dataSize = 128;
-    this.filePosition = fileInfo.size;
   }
 
   /** Ensure the data we're reading is for an ID3v1 tag. */
@@ -60,7 +47,7 @@ export class ID3v1Reader extends FileReader {
     const track = version === '1.1' ? _comment[29] : undefined;
 
     return {
-      version,
+      format: `ID3v${version}`,
       metadata: {
         ...(this.wantedKeys.includes('album') ? { album } : {}),
         ...(this.wantedKeys.includes('artist') ? { artist } : {}),

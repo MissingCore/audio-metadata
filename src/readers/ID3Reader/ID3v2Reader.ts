@@ -1,4 +1,5 @@
 import type { MetadataExcerpt, MetadataKey, MetadataKeys } from '../types';
+import { read } from '../../libs/fs';
 import type { Encoding } from '../../utils/Buffer';
 import { Buffer } from '../../utils/Buffer';
 import { FileError } from '../../utils/errors';
@@ -74,15 +75,12 @@ export class ID3v2Reader extends FileReader {
 
   /** Get MP3 metadata. */
   async getMetadata() {
-    await this.init({
-      bytes: 10,
-      getBufferSize: () => {
-        this.skip(6);
-        // Add 10 bytes to buffer size since it's not included.
-        //  - We currently ignore the footer.
-        return 10 + Buffer.bytesToInt(this.read(4), 7);
-      },
-    });
+    /* Buffer initialization. */
+    const data = Buffer.base64ToBuffer(await read(this.fileUri, 4, 6));
+    // Add 10 bytes to buffer size since it's not included.
+    //  - We currently ignore the footer.
+    const tagSize = 10 + Buffer.bytesToInt([...data], 7);
+    await this.initDataFrom({ size: tagSize });
 
     // Process the file (ID3v2 Tag Header & Frames).
     this.processHeader();
@@ -95,7 +93,7 @@ export class ID3v2Reader extends FileReader {
 
     // Return the results.
     return {
-      version: this.version,
+      format: `ID3v2.${this.version}`,
       metadata: Object.fromEntries(
         Object.entries(this.frames).map(([key, value]) => {
           const metadataKey = FrameMetadataMap[key as FrameId];
