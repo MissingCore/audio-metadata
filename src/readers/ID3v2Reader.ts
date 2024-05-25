@@ -171,8 +171,16 @@ export class ID3v2Reader extends FileReader {
     if (this.version > 2) {
       // Next 2 bytes are treated as flags.
       const flags = this.read(2);
-      if (this.version === 4 && !this.unsynch) {
+      if (this.version === 4) {
         frameUnsych = Buffer.byteToBinary(flags[1])[6] === '1';
+        if (this.unsynch) {
+          if (!frameUnsych) {
+            throw new FileError(
+              'All frames in tag should have unsynchronisation, however unsynchronisation flag in frame is unset.'
+            );
+          }
+          frameUnsych = false; // Don't un-unsynchronise again.
+        }
       }
     }
 
