@@ -1,5 +1,6 @@
 /* eslint-disable no-bitwise */
-import { decode } from 'fastestsmallesttextencoderdecoder';
+import 'fast-text-encoding';
+// import { decode } from 'fastestsmallesttextencoderdecoder';
 
 /**
  * List of character set encodings.
@@ -99,8 +100,10 @@ export class Buffer {
       case 2:
         return _bytesToStr(getDoubleBytes(bytes, true));
       /* [UTF-8] */
-      case 3:
-        return decode(Uint8Array.from(bytes));
+      case 3: {
+        const tdInstant = new TextDecoder();
+        return tdInstant.decode(Uint8Array.from(bytes));
+      }
       /* [ISO-8859-1] — Only ASCII printable characters */
       default:
         return _bytesToStr(bytes);
