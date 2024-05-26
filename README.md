@@ -8,7 +8,8 @@ An audio file metadata reader built for **React Native** (mobile only) supportin
 
 | Extension | Format              | Additional Information                                                                                   |
 | --------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| MP3       | - ID3v1<br/>- ID3v2 | - Unsynchronisation supported<br/>- Tag at end of file supported (ID3v2.4)<br/>- All other flags ignored |
+| `.flac`   | - FLAC              |                                                                                                          |
+| `.mp3`    | - ID3v1<br/>- ID3v2 | - Unsynchronisation supported<br/>- Tag at end of file supported (ID3v2.4)<br/>- All other flags ignored |
 
 ## Installation
 

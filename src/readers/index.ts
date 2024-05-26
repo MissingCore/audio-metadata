@@ -1,3 +1,4 @@
+import { FLACReader } from './FLACReader';
 import { readMP3Metadata } from './ID3Reader';
 
 import type { MetadataKeys, MetadataResponse } from './types';
@@ -11,7 +12,12 @@ export async function getAudioMetadata<TOptions extends MetadataKeys>(
   uri: string,
   options: TOptions
 ): Promise<MetadataResponse<TOptions>> {
-  if (uri.endsWith('mp3')) {
+  if (uri.endsWith('flac')) {
+    return {
+      fileType: `flac`,
+      ...(await new FLACReader(uri, options).getMetadata()),
+    };
+  } else if (uri.endsWith('mp3')) {
     return await readMP3Metadata(uri, options);
   }
 

@@ -73,6 +73,13 @@ export class Buffer {
     return byte.toString(2).padStart(8, '0');
   }
 
+  /** Reads a range of bits in a byte (in Big Endian). */
+  static readBitsInByte(byte: number, start: number, length: number) {
+    const binary = this.byteToBinary(byte);
+    const range = binary.slice(start, start + length);
+    return parseInt(range.padStart(8, '0'), 2);
+  }
+
   /** Convert bytes into a base64 string. */
   static bytesToBase64(bytes: number[]) {
     return btoa(bytes.reduce((s, byte) => s + String.fromCharCode(byte), ''));
@@ -82,10 +89,15 @@ export class Buffer {
    * Convert bytes into an integer, allows for limiting the numbers of
    * bits read in a byte (ie: `7` would read as a synchsafe integer).
    */
-  static bytesToInt(bytes: number[], bitsUsed = 8) {
-    return [...bytes]
-      .reverse()
-      .reduce((num, byte, idx) => (num |= byte << (idx * bitsUsed)), 0);
+  static bytesToInt(bytes: number[], bitsUsed = 8, bigEndian = true) {
+    const bytesCpy = [...bytes];
+    // By default, bytes are read from left to right, resulting in little
+    // endian format. To read in big endian, we need to reverse the array.
+    if (bigEndian) bytesCpy.reverse();
+    return bytesCpy.reduce(
+      (num, byte, idx) => (num |= byte << (idx * bitsUsed)),
+      0
+    );
   }
 
   /** Convert bytes into a string based on an encoding. */
