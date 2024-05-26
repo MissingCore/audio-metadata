@@ -6,9 +6,9 @@ An audio file metadata reader built for **React Native** (mobile only) supportin
 
 ## Supported Files
 
-| Extension | Format | Additional Information                                      |
-| --------- | ------ | ----------------------------------------------------------- |
-| MP3       | ID3v2  | - Unsynchronisation supported<br/>- All other flags ignored |
+| Extension | Format              | Additional Information                                                                                   |
+| --------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| MP3       | - ID3v1<br/>- ID3v2 | - Unsynchronisation supported<br/>- Tag at end of file supported (ID3v2.4)<br/>- All other flags ignored |
 
 ## Installation
 
@@ -36,3 +36,12 @@ npm i @missingcore/audio-metadata @dr.pogodin/react-native-fs
 ```
 
 ## Usage
+
+## Related
+
+- [jsmediatags](https://github.com/aadsm/jsmediatags)
+- [expo-music-info-2](https://github.com/MehrabSp/expo-music-info-2)
+
+## License
+
+[MIT](./LICENSE)

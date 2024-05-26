@@ -1,5 +1,5 @@
 import type { MetadataExcerpt, MetadataKey, MetadataKeys } from '../types';
-import { read } from '../../libs/fs';
+import { getFileStat, read } from '../../libs/fs';
 import type { Encoding } from '../../utils/Buffer';
 import { Buffer } from '../../utils/Buffer';
 import { FileError } from '../../utils/errors';
@@ -54,7 +54,8 @@ const FrameMetadataMap: Record<FrameId, MetadataKey> = {
 
 /**
  * Reads ID3v2 metadata (supporting unsynchronisation) stored at the
- * beginning of a MP3 file.
+ * beginning of a MP3 file. Supports reading ID3v2.4 tags stored at the
+ * end of the file (or before an ID3v1 tag).
  */
 export class ID3v2Reader extends FileReader {
   wantedKeys: MetadataKeys = [];
@@ -64,23 +65,17 @@ export class ID3v2Reader extends FileReader {
   /* Extra flags */
   unsynch = false;
   xHeader = false;
-  // Present in ID3v2.4 — makes it easier searching tag from the end of
-  // the file — currently unused.
-  footer = false;
+  footer?: 'eof' | 'pre-v1'; // If tag is at the end of file in ID3v2.4.
 
-  constructor(uri: string, options: MetadataKeys) {
+  constructor(uri: string, options: MetadataKeys, footer?: 'eof' | 'pre-v1') {
     super(uri);
     this.wantedKeys = options;
+    this.footer = footer;
   }
 
   /** Get MP3 metadata. */
   async getMetadata() {
-    /* Buffer initialization. */
-    const data = Buffer.base64ToBuffer(await read(this.fileUri, 4, 6));
-    // Add 10 bytes to buffer size since it's not included.
-    //  - We currently ignore the footer.
-    const tagSize = 10 + Buffer.bytesToInt([...data], 7);
-    await this.initDataFrom({ size: tagSize });
+    await this.initBuffer();
 
     // Process the file (ID3v2 Tag Header & Frames).
     this.processHeader();
@@ -108,6 +103,23 @@ export class ID3v2Reader extends FileReader {
     };
   }
 
+  /** Initialize buffer through `FilerReader`. */
+  async initBuffer() {
+    const fileSize = (await getFileStat(this.fileUri)).size!;
+    const data =
+      this.footer === 'eof'
+        ? Buffer.base64ToBuffer(await read(this.fileUri, 4, fileSize - 4))
+        : this.footer === 'pre-v1'
+          ? Buffer.base64ToBuffer(await read(this.fileUri, 4, fileSize - 132))
+          : Buffer.base64ToBuffer(await read(this.fileUri, 4, 6));
+    // Add 10 bytes to buffer size since header isn't included.
+    const tagSize = 10 + Buffer.bytesToInt([...data], 7);
+    // Subtract an additional 10 bytes for the footer.
+    let offset = this.footer ? fileSize - tagSize - 10 : undefined;
+    if (this.footer === 'pre-v1') offset! -= 128;
+    await this.initDataFrom({ size: tagSize, offset });
+  }
+
   /** Read information in the header of an ID3v2 tag (first 10 bytes). */
   processHeader() {
     // First 3 bytes should encode the string "ID3".
@@ -125,7 +137,6 @@ export class ID3v2Reader extends FileReader {
     const flagsAsBinary = Buffer.byteToBinary(flags[0]); // Make sure we get 8 bits.
     this.unsynch = flagsAsBinary[0] === '1';
     this.xHeader = flagsAsBinary[1] === '1';
-    this.footer = this.version === 4 && flagsAsBinary[3] === '1';
 
     // Last 4 bytes gives the total size of the tag excluding the header
     // (stored as a 32 bit synchsafe integer).

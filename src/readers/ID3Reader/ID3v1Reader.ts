@@ -20,13 +20,17 @@ export class ID3v1Reader extends FileReader {
 
   /** Get MP3 metadata. */
   async getMetadata() {
-    /* Buffer initialization. */
-    const fileSize = (await getFileStat(this.fileUri)).size!;
-    await this.initDataFrom({ size: 128, offset: fileSize - 128 });
+    await this.initBuffer();
 
     // Process the file & return results.
     this.processHeader();
     return this.processData();
+  }
+
+  /** Initialize buffer through `FilerReader`. */
+  async initBuffer() {
+    const fileSize = (await getFileStat(this.fileUri)).size!;
+    await this.initDataFrom({ size: 128, offset: fileSize - 128 });
   }
 
   /** Ensure the data we're reading is for an ID3v1 tag. */
