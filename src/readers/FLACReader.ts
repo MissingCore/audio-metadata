@@ -11,22 +11,19 @@ import { arrayIncludes } from '../utils/object';
     - https://exiftool.org/TagNames/Vorbis.html
 */
 
-const BlockTypes = {
-  text: [
-    ...['ALBUM', 'ARTIST', 'TITLE', 'TRACKNUMBER'],
-    ...['DATE', 'ORIGINALDATE', 'ORIGINALYEAR'],
-  ],
-  picture: ['PICTURE'],
-} as const;
+/** Array of Vorbis Comment field names we'll support. */
+const VorbisCommentFieldNames = [
+  ...['ALBUM', 'ARTIST', 'TITLE', 'TRACKNUMBER'],
+  // We'll support dates that start with the year.
+  ...['DATE', 'ORIGINALDATE', 'ORIGINALYEAR'],
+] as const;
 
-type TextId = (typeof BlockTypes.text)[number];
-type PictureId = (typeof BlockTypes.picture)[number];
-type MetaId = TextId | PictureId;
+type FieldName = (typeof VorbisCommentFieldNames)[number];
 
-const BlockMetadataMap: Record<MetaId, MetadataKey> = {
+/** Vorbis Comment Field Name Metadata Map */
+const VCFNMetadataMap: Record<FieldName, MetadataKey> = {
   ALBUM: 'album',
   ARTIST: 'artist',
-  PICTURE: 'artwork',
   TITLE: 'name',
   TRACKNUMBER: 'track',
   DATE: 'year',
@@ -34,7 +31,10 @@ const BlockMetadataMap: Record<MetaId, MetadataKey> = {
   ORIGINALYEAR: 'year',
 };
 
-/** Reads FLAC metadata. */
+/**
+ * Reads FLAC metadata.
+ * - Numbers are Big Endian unless otherwise specified.
+ */
 export class FLACReader extends FileReader {
   wantedKeys: MetadataKeys = [];
   frames = {} as Record<MetadataKey, string>;
@@ -46,7 +46,7 @@ export class FLACReader extends FileReader {
 
   /** Get FLAC metadata. */
   async getMetadata() {
-    await this.initBuffer();
+    await this.initialize();
 
     // Process the file.
     while (!this.finished) await this.processBlock();
@@ -66,34 +66,42 @@ export class FLACReader extends FileReader {
     };
   }
 
-  /** Initialize buffer through `FilerReader`. */
-  async initBuffer() {
+  /**
+   * Initialize buffer through `FileReader`.
+   *
+   * Throws an error if we don't encounter `fLaC` after reading the first
+   * 4 bytes.
+   */
+  async initialize() {
     await this.initDataFrom({ size: 4 });
 
-    // First 4 bytes should encode the string "fLaC".
     if (Buffer.bytesToString(this.read(4)) !== 'fLaC')
       throw new FileError('Does not follow proper FLAC format.');
   }
 
-  /** FLAC metadata is stored inside of "Metadata Blocks". */
+  /**
+   * FLAC metadata is stored inside of "Metadata Blocks" made up of:
+   *  - A 4-byte header.
+   *  - Data whose size is specified by its header.
+   */
   async processBlock() {
+    // Handle the block header.
     await this.initDataFrom({ size: 4, offset: this.filePosition });
-    const { isLast, type, size } = this.processBlockHeader();
-    await this.initDataFrom({ size, offset: this.filePosition });
+    const { isLast, type, length } = this.processBlockHeader();
 
+    // Handle the block data.
+    await this.initDataFrom({ size: length, offset: this.filePosition });
     if (type === 4) {
-      // This is a "VORBIS_COMMENT" block containing the tags.
       this.processVorbisCommentBlockData();
     } else if (type === 6 && arrayIncludes(this.wantedKeys, 'artwork')) {
-      // This is a "PICTURE" block.
-      this.processPictureBlockData(size);
+      this.processPictureBlockData(length);
     } else {
-      this.skip(size);
+      this.skip(length);
     }
 
-    // Since we only load the size of the block as we don't know how much
-    // space all the Metadata Blocks take up, we need to ensure `this.finished`
-    // is `false` when we're not done.
+    // We need to make sure `this.finished` is `false` when reading this
+    // file as we don't know the amount of space Metadata Blocks take up
+    // cumulatively in the file unlike with ID3.
     if (isLast || Object.keys(this.frames).length === this.wantedKeys.length) {
       this.finished = true;
     } else {
@@ -101,44 +109,70 @@ export class FLACReader extends FileReader {
     }
   }
 
-  /** A Metadata Block Header is made up of 4 bytes. */
+  /**
+   * A Metadata Block Header is made up of 4 bytes specifying:
+   *  - [1 Bit] If this is the last block before the FLAC Frames start.
+   *  - [7 Bits] The type of this block (4: VORBIS_COMMENT, 6: PICTURE).
+   *  - [3 Bytes] The length of the data following this header.
+   */
   processBlockHeader() {
-    const blockInfoByte = this.read(1)[0];
+    const [byteOne] = this.read(1);
     return {
-      /** If this Metadata Block is the last one before FLAC frames start. */
-      isLast: Buffer.readBitsInByte(blockInfoByte, 0, 1) === 1,
-      type: Buffer.readBitsInByte(blockInfoByte, 1, 7),
-      /** Length/size of metadata that follows Metadata Block Header. */
-      size: Buffer.bytesToInt(this.read(3)),
+      isLast: Buffer.readBitsInByte(byteOne, 0, 1) === 1,
+      type: Buffer.readBitsInByte(byteOne, 1, 7),
+      length: Buffer.bytesToInt(this.read(3)),
     };
   }
 
-  /** Returns a string represented by the contents of FLAC tag. */
+  /**
+   * A "VORBIS_COMMENT" Metadata Block Data follows different specifications
+   * compared to the rest of the FLAC Metadata Block:
+   *  - Numbers are in Little Endian.
+   *  - Text is encoded in UTF-8.
+   *
+   * Otherwise, it follows the following structure:
+   *  - [4 Bytes] Vendor Length.
+   *  - [n Bytes] Vendor String.
+   *  - [4 Bytes] Number of "comments" (ie: metadata tags).
+   *  - Looping n Times:
+   *    - [4 Bytes] Length of "comment".
+   *    - [n Bytes] Contents of "comment" (ie: `key=value`).
+   */
   processVorbisCommentBlockData() {
-    /* Vorbis field lengths are in Little Endian & text is encoded in UTF-8. */
     const vendorLength = Buffer.bytesToInt(this.read(4), 8, false);
-    // Skip vendor string.
-    this.skip(vendorLength);
+    this.skip(vendorLength); // Skip as not needed.
 
-    // Get the number of comments available.
     const commentListLength = Buffer.bytesToInt(this.read(4), 8, false);
+
     for (let i = 0; i < commentListLength; i++) {
       const commentLength = Buffer.bytesToInt(this.read(4), 8, false);
-      // Read comment encoded in UTF-8.
       const comment = Buffer.bytesToString(this.read(commentLength), 3);
-      const [txtKey, value] = comment.split('=');
-      const metaKey = BlockMetadataMap[txtKey as TextId];
-      // If we want to include this value in the return results.
-      const isWanted = arrayIncludes(this.wantedKeys, metaKey ?? '');
+      const [fieldName, value] = comment.split('=');
+
+      const metadataKey = VCFNMetadataMap[fieldName as FieldName] ?? '';
+      // If we want to return this metadata tag.
+      const isWanted = arrayIncludes(this.wantedKeys, metadataKey);
       // Make sure we don't overrride an existing value (ie: there can be
       // multiple `ARTIST` values).
-      if (isWanted && this.frames[metaKey] === undefined) {
-        this.frames[metaKey] = value;
+      if (isWanted && this.frames[metadataKey] === undefined) {
+        this.frames[metadataKey] = value;
       }
     }
   }
 
-  /** Returns the base64 representation of the image. */
+  /**
+   * A "PICTURE" Metadata Block Data has been available since FLAC v1.1.3
+   * (27-Nov-2006) and has the following structure:
+   *  - [4 Bytes] Picture type following ID3v2 specifications.
+   *  - [4 Bytes] Length of MIME type.
+   *  - [n Bytes] MIME type.
+   *  - [4 Bytes] Length of description string.
+   *  - [n Bytes] Description of picture **encoded in `UTF-8`**.
+   *  - [16 Bytes] Information we don't care about (ie: picture dimensions,
+   *  color depth, etc.)
+   *  - [4 Bytes] Length of picture data.
+   *  - [n Bytes] Picture data.
+   */
   processPictureBlockData(size: number) {
     const pictureType = Buffer.bytesToInt(this.read(4));
     // We'll ignore the picture if it's not classified as `Other` or `Cover (front)`
@@ -153,12 +187,10 @@ export class FLACReader extends FileReader {
     const descriptionLength = Buffer.bytesToInt(this.read(4));
     this.skip(descriptionLength);
 
-    // Skip other image metadata (ie: width, height, color depth, etc.).
-    this.skip(16);
+    this.skip(16); // Skip other image metadata.
 
     const pictureLength = Buffer.bytesToInt(this.read(4));
     const pictureData = this.read(pictureLength);
-
     this.frames.artwork = `data:${mimeType};base64,${Buffer.bytesToBase64(pictureData)}`;
   }
 }

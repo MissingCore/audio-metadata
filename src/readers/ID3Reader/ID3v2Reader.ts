@@ -32,8 +32,7 @@ const FrameTypes = {
 } as const;
 
 type TextFrameId = (typeof FrameTypes.text)[number];
-type PictureFrameId = (typeof FrameTypes.picture)[number];
-type FrameId = TextFrameId | PictureFrameId;
+type FrameId = TextFrameId | (typeof FrameTypes.picture)[number];
 
 const FrameMetadataMap: Record<FrameId, MetadataKey> = {
   TAL: 'album',
@@ -54,12 +53,12 @@ const FrameMetadataMap: Record<FrameId, MetadataKey> = {
 
 /**
  * Reads ID3v2 metadata (supporting unsynchronisation) stored at the
- * beginning of a MP3 file. Supports reading ID3v2.4 tags stored at the
+ * beginning of a MP3 file. Supports reading ID3v2.4 tags located at the
  * end of the file (or before an ID3v1 tag).
  */
 export class ID3v2Reader extends FileReader {
   wantedKeys: MetadataKeys = [];
-  frames = {} as Record<FrameId, string>;
+  frames = {} as Record<MetadataKey, string>;
   version = 0; // The minor version of the spec (`2 | 3 | 4`).
 
   /* Extra flags */
@@ -75,7 +74,7 @@ export class ID3v2Reader extends FileReader {
 
   /** Get MP3 metadata. */
   async getMetadata() {
-    await this.initBuffer();
+    await this.initialize();
 
     // Process the file (ID3v2 Tag Header & Frames).
     this.processHeader();
@@ -91,20 +90,18 @@ export class ID3v2Reader extends FileReader {
       format: `ID3v2.${this.version}`,
       metadata: Object.fromEntries(
         Object.entries(this.frames).map(([key, value]) => {
-          const metadataKey = FrameMetadataMap[key as FrameId];
-
           let valAsNum: number | undefined;
-          if (metadataKey === 'track') valAsNum = Number(value.split('/')[0]);
-          else if (metadataKey === 'year') valAsNum = Number(value.slice(0, 4));
+          if (key === 'track') valAsNum = Number(value.split('/')[0]);
+          else if (key === 'year') valAsNum = Number(value.slice(0, 4));
 
-          return [metadataKey, valAsNum && !isNaN(valAsNum) ? valAsNum : value];
+          return [key, valAsNum && !isNaN(valAsNum) ? valAsNum : value];
         })
       ) as MetadataExcerpt<typeof this.wantedKeys>,
     };
   }
 
-  /** Initialize buffer through `FilerReader`. */
-  async initBuffer() {
+  /** Initialize buffer through `FileReader`. */
+  async initialize() {
     const fileSize = (await getFileStat(this.fileUri)).size!;
     const data =
       this.footer === 'eof'
@@ -120,40 +117,45 @@ export class ID3v2Reader extends FileReader {
     await this.initDataFrom({ size: tagSize, offset });
   }
 
-  /** Read information in the header of an ID3v2 tag (first 10 bytes). */
+  /**
+   * ID3v2 starts with a 10 bytes header with the following structure:
+   *  - [3 Bytes] `ID3` file identifier.
+   *  - [2 Bytes] Major version & revision.
+   *  - [1 Byte] Flags field.
+   *  - [4 Bytes] Total size of the tag excluding this header & footer
+   *  (optional) stored as a 32 bit synchsafe integer.
+   */
   processHeader() {
-    // First 3 bytes should encode the string "ID3".
     if (Buffer.bytesToString(this.read(3)) !== 'ID3')
       throw new FileError('Not an ID3v2 tag.');
 
-    // Next 2 bytes encodes the major version & revision.
-    const [version] = this.read(2);
-    this.version = Buffer.bytesToInt([version]);
+    this.version = Buffer.bytesToInt([this.read(2)[0]]);
     if (this.version > 4)
       throw new FileError(`ID3v2.${this.version} is not supported.`);
 
-    // Next byte is treated as flags.
-    const flags = this.read(1);
-    const flagsAsBinary = Buffer.byteToBinary(flags[0]); // Make sure we get 8 bits.
+    const flagsAsBinary = Buffer.byteToBinary(this.read(1)[0]);
     this.unsynch = flagsAsBinary[0] === '1';
     this.xHeader = flagsAsBinary[1] === '1';
 
-    // Last 4 bytes gives the total size of the tag excluding the header
-    // (stored as a 32 bit synchsafe integer).
     this.dataSize = Buffer.bytesToInt(this.read(4), 7);
   }
 
-  /** Read information in the extended header of an ID3v2.3/4 tag if it exists. */
+  /**
+   * ID3v2.3/4 has an optional variable-length extended header. We currently
+   * don't support this, so we ignore its contents entirely.
+   *
+   * Throws an error if the `xHeader` flag is set in ID3v2.2 as this represents
+   * the "Compression" flag, which isn't implemented.
+   */
   processExtendedHeader() {
     if (!this.xHeader) return;
     if (this.version === 2)
       throw new FileError('Compression bit should not be set for ID3v2.2.');
 
-    /*
-      We currently don't support the extended header, so we'll skip it.
-    */
+    /* Skip as we don't support it. */
     if (this.version === 4) {
-      // First 4 bytes is the remaining size of the extended header as a 32 bit synchsafe integer.
+      // First 4 bytes is the remaining size of the extended header as
+      // a 32 bit synchsafe integer.
       this.skip(Buffer.bytesToInt(this.read(4), 7));
     } else {
       // In ID3v2.3, the remaining extended header size is 6 or 10 bytes.
@@ -161,28 +163,64 @@ export class ID3v2Reader extends FileReader {
     }
   }
 
-  /** Process a frame (tag data is divided into frames). */
+  /**
+   * An ID3v2 frame can be broken down into 2 sections:
+   *  - A 6-byte (ID3v2.2) or 10-byte (ID3v2.3/4) header.
+   *  - Data whose size is specified by its header.
+   */
   processFrame() {
-    // Frame id is 3 (ID3v2.2) / 4 (ID3v2.3/4) bytes long.
-    const frameId = Buffer.bytesToString(this.read(this.version === 2 ? 3 : 4));
+    // Handle the frame header.
+    const { id, size, frameUnsych } = this.processFrameHeader();
     // Hit the "padding" when we get a `null` byte instead of a frame identifier.
-    if (frameId === '') {
+    if (id === '') {
       this.finished = true;
       return;
     }
 
-    // Frame size is 3 (ID3v2.2) / 4 (ID3v2.3/4) bytes long. Note that ID3v2.3
-    // frame size isn't stored as a 32 bit synchsafe integer (unlike ID3v2.4).
-    //  - https://hydrogenaud.io/index.php/topic,67145.msg602034.html#msg602034
-    let frameSize =
+    // Handle the frame data.
+    const isWanted = arrayIncludes(
+      this.wantedKeys,
+      FrameMetadataMap[id as FrameId]
+    );
+    if (isWanted && arrayIncludes(FrameTypes.text, id)) {
+      this.processTextFrame(id, size, frameUnsych);
+    } else if (isWanted && arrayIncludes(FrameTypes.picture, id)) {
+      this.processPictureFrame(size, frameUnsych);
+    } else {
+      this.skip(size);
+    }
+
+    // Exit early once we have all the data needed.
+    if (Object.keys(this.frames).length === this.wantedKeys.length) {
+      this.finished = true;
+    }
+  }
+
+  /**
+   * In ID3v2.2, all Frames start with a 6 bytes header:
+   *  - [3 Bytes] Frame identifier
+   *  - [3 Bytes] Size
+   *
+   * In ID3v2.3/4, all Frames start with a 10 bytes header:
+   *  - [4 Bytes] Frame identifier
+   *  - [4 Bytes] Size
+   *    - Explicitly a 32 bit synchsafe integer in ID3v2.4 unlike in ID3v2.3
+   *    (https://hydrogenaud.io/index.php/topic,67145.msg602034.html#msg602034).
+   *  - [2 Bytes] Flags field
+   */
+  processFrameHeader() {
+    const frameId = Buffer.bytesToString(this.read(this.version === 2 ? 3 : 4));
+
+    const frameSize =
       this.version === 2
         ? Buffer.bytesToInt(this.read(3))
         : Buffer.bytesToInt(this.read(4), this.version === 3 ? 8 : 7);
 
+    // Handle flags not present in ID3v2.2.
     let frameUnsych = false; // Only matters for ID3v2.4
-    if (this.version > 2) {
-      // Next 2 bytes are treated as flags.
+    if (this.version !== 2) {
       const flags = this.read(2);
+
       if (this.version === 4) {
         frameUnsych = Buffer.byteToBinary(flags[1])[6] === '1';
         if (this.unsynch) {
@@ -196,66 +234,59 @@ export class ID3v2Reader extends FileReader {
       }
     }
 
-    // -=- Finished Processing Frame Header -=-
-
-    // Process the frame once we identify the frame type & exit early
-    // if we got all the data we needed.
-    const isWanted = arrayIncludes(
-      this.wantedKeys,
-      FrameMetadataMap[frameId as FrameId]
-    );
-    if (isWanted && arrayIncludes(FrameTypes.text, frameId)) {
-      this.processTextFrame(frameId, frameSize, frameUnsych);
-    } else if (isWanted && arrayIncludes(FrameTypes.picture, frameId)) {
-      this.processPictureFrame(frameSize, frameUnsych);
-    } else {
-      this.skip(frameSize);
-    }
-
-    if (Object.keys(this.frames).length === this.wantedKeys.length) {
-      this.finished = true;
-    }
+    return { id: frameId, size: frameSize, frameUnsych };
   }
 
-  /** Returns a string represented by the contents of a text frame. */
+  /**
+   * A Text Information Frame has the following structure:
+   *  - [1 Byte] Text encoding.
+   *  - [n Bytes] Text string.
+   */
   processTextFrame(frameId: TextFrameId, frameSize: number, unsync?: boolean) {
     // `unsync` is for ID3v2.4 only.
     let data: number[] = unsync
       ? this.read(this.unsynchBuffer(this.buffer.position, frameSize))
       : this.read(frameSize);
-    // First byte indicates text encoding.
+
     const [encoding, ...chunk] = data;
-    this.frames[frameId] = Buffer.bytesToString(chunk, encoding as Encoding);
+    const textData = Buffer.bytesToString(chunk, encoding as Encoding);
+
+    const metadataKey = FrameMetadataMap[frameId as FrameId];
+    this.frames[metadataKey] = textData;
   }
 
-  /** Returns the base64 representation of the image. */
+  /**
+   * In ID3v2.2, An Attached Picture Frame has the following structure:
+   *  - [1 Byte] Text encoding.
+   *  - Different methods of getting MIME type based on ID3v2 version.
+   *    - [3 Bytes] Image Format (`"PNG" | "JPG"`) for ID3v2.2.
+   *    - [n Bytes] MIME type - ends when seeing a `null` character for ID3v2.3/4.
+   *  - [1 Byte] Picture type.
+   *  - [n Bytes] Description - ends when seeing a `null` character.
+   *  - [n Bytes] Picture data.
+   */
   processPictureFrame(frameSize: number, unsync?: boolean) {
     // `unsync` is for ID3v2.4 only.
     let newFrameSize = unsync
       ? this.unsynchBuffer(this.buffer.position, frameSize)
       : frameSize;
 
-    // First byte indicates text encoding.
     this.skip(1);
     let pictureDataSize = newFrameSize - 1;
 
-    let chunk: number[] = [];
     let mimeType: string | undefined;
     if (this.version === 2) {
-      // ID3v2.2 has an "Image Format" (`"PNG" | "JPG"`) instead of "MIME Type".
       const imageFormat = Buffer.bytesToString(this.read(3));
       mimeType = imageFormat === 'PNG' ? 'image/png' : 'image/jpeg';
       pictureDataSize -= 3;
     } else {
-      chunk = this.readTilNull();
+      const chunk = this.readTilNull();
       mimeType = Buffer.bytesToString(chunk);
       pictureDataSize -= chunk.length;
     }
 
-    // Next byte indicates picture type
-    chunk = this.read(1);
+    const pictureType = Buffer.bytesToInt(this.read(1));
     pictureDataSize -= 1;
-    const pictureType = Buffer.bytesToInt(chunk);
     // We'll ignore the picture if it's not classified as `Other` or `Cover (front)`
     if (pictureType !== 0 && pictureType !== 3) {
       this.skip(pictureDataSize);
@@ -263,10 +294,10 @@ export class ID3v2Reader extends FileReader {
     }
 
     // Get description (field is of unknown length & ends with a `null`)
-    chunk = this.readTilNull();
-    pictureDataSize -= chunk.length;
+    const description = this.readTilNull();
+    pictureDataSize -= description.length;
 
     const pictureData = this.read(pictureDataSize);
-    this.frames.APIC = `data:${mimeType};base64,${Buffer.bytesToBase64(pictureData)}`;
+    this.frames.artwork = `data:${mimeType};base64,${Buffer.bytesToBase64(pictureData)}`;
   }
 }

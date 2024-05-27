@@ -87,7 +87,9 @@ export class Buffer {
 
   /**
    * Convert bytes into an integer, allows for limiting the numbers of
-   * bits read in a byte (ie: `7` would read as a synchsafe integer).
+   * bits read in a byte (ie: `bitsUsed = 7` would read as a synchsafe
+   * integer).
+   *  - Defaults: `bitsUsed = 8`, `bigEndian = true`
    */
   static bytesToInt(bytes: number[], bitsUsed = 8, bigEndian = true) {
     const bytesCpy = [...bytes];
