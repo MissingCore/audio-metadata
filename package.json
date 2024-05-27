@@ -58,16 +58,16 @@
     "fastestsmallesttextencoderdecoder": "^1.0.22"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^17.0.2",
-    "@dr.pogodin/react-native-fs": "^2.25.0",
-    "@evilmartians/lefthook": "^1.5.0",
-    "@react-native/eslint-config": "^0.73.1",
-    "@release-it/conventional-changelog": "^5.0.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@dr.pogodin/react-native-fs": "^2.25.2",
+    "@evilmartians/lefthook": "^1.6.13",
+    "@react-native/eslint-config": "^0.74.83",
+    "@release-it/conventional-changelog": "^8.0.1",
     "@types/fast-text-encoding": "^1.0.3",
     "@types/fastestsmallesttextencoderdecoder": "^1.0.2",
     "@types/jest": "^29.5.5",
-    "@types/react": "^18.2.44",
-    "commitlint": "^17.0.2",
+    "@types/react": "^18.2.79",
+    "commitlint": "^19.3.0",
     "del-cli": "^5.1.0",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
@@ -78,7 +78,8 @@
     "react": "18.2.0",
     "react-native": "0.74.1",
     "react-native-builder-bob": "^0.23.2",
-    "release-it": "^15.0.0",
+    "release-it": "^17.3.0",
+    "release-it-pnpm": "^4.6.1",
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
