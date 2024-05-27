@@ -1,4 +1,4 @@
-import type { MetadataExcerpt, MetadataKeys } from '../types';
+import type { MetadataExcerpt } from '../types';
 import { getFileStat } from '../../libs/fs';
 import { Buffer } from '../../utils/Buffer';
 import { FileError } from '../../utils/errors';
@@ -11,13 +11,6 @@ import { FileReader } from '../../utils/FileReader';
 
 /** Reads ID3v1 metadata located at the end of a MP3 file. */
 export class ID3v1Reader extends FileReader {
-  wantedKeys: MetadataKeys = [];
-
-  constructor(uri: string, options: MetadataKeys) {
-    super(uri);
-    this.wantedKeys = options;
-  }
-
   /** Get MP3 metadata. */
   async getMetadata() {
     await this.initialize();
@@ -63,12 +56,12 @@ export class ID3v1Reader extends FileReader {
     return {
       format: `ID3v${version}`,
       metadata: {
-        ...(this.wantedKeys.includes('album') ? { album } : {}),
-        ...(this.wantedKeys.includes('artist') ? { artist } : {}),
-        ...(this.wantedKeys.includes('name') ? { name } : {}),
-        ...(this.wantedKeys.includes('track') ? { track } : {}),
-        ...(this.wantedKeys.includes('year') ? { year } : {}),
-      } as MetadataExcerpt<typeof this.wantedKeys>,
+        ...(this.wantedTags.includes('album') ? { album } : {}),
+        ...(this.wantedTags.includes('artist') ? { artist } : {}),
+        ...(this.wantedTags.includes('name') ? { name } : {}),
+        ...(this.wantedTags.includes('track') ? { track } : {}),
+        ...(this.wantedTags.includes('year') ? { year } : {}),
+      } as MetadataExcerpt<typeof this.wantedTags>,
     };
   }
 }

@@ -1,4 +1,6 @@
 import { Buffer } from './Buffer';
+import { arrayIncludes } from './object';
+import type { MetadataExcerpt, MetadataKey, MetadataKeys } from '..';
 import { read } from '../libs/fs';
 
 /** Read a file encoded in base64, storing the contents in a buffer. */
@@ -10,8 +12,12 @@ export class FileReader {
   filePosition = 0;
   finished = false;
 
-  constructor(uri: string) {
+  wantedTags: MetadataKeys = [];
+  tags = {} as Record<MetadataKey, string>;
+
+  constructor(uri: string, options: MetadataKeys) {
     this.fileUri = uri;
+    this.wantedTags = options;
   }
 
   /** Initialize the buffer with all the data we need from the given spot in a file. */
@@ -74,6 +80,32 @@ export class FileReader {
     );
 
     return data.length;
+  }
+
+  /**
+   * Format `tags` into a `MetadataExcerpt` object and keep only the tags
+   * we want specified by `wantedTags`.
+   */
+  formatMetadata() {
+    // Ensure tags are atleast defined as `undefined` in the returned object.
+    const defaultMetadata = this.wantedTags.map((key) => [
+      key,
+      undefined,
+    ]) as Array<[string, string | number | undefined]>;
+
+    return Object.fromEntries(
+      defaultMetadata.concat(
+        Object.entries(this.tags)
+          .filter(([key]) => arrayIncludes(this.wantedTags, key))
+          .map(([key, value]) => {
+            let valAsNum: number | undefined;
+            if (key === 'track') valAsNum = Number(value.split('/')[0]);
+            else if (key === 'year') valAsNum = Number(value.slice(0, 4));
+
+            return [key, valAsNum && !isNaN(valAsNum) ? valAsNum : value];
+          })
+      )
+    ) as MetadataExcerpt<typeof this.wantedTags>;
   }
 
   /** Checks if we reached the end of the buffer and updates `finished` if we are. */

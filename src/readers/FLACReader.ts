@@ -1,8 +1,7 @@
-import type { MetadataExcerpt, MetadataKey, MetadataKeys } from './types';
+import type { MetadataKey } from './types';
 import { Buffer } from '../utils/Buffer';
 import { FileError } from '../utils/errors';
 import { FileReader } from '../utils/FileReader';
-import { arrayIncludes } from '../utils/object';
 
 /*
   Useful documentation:
@@ -36,14 +35,6 @@ const VCFNMetadataMap: Record<FieldName, MetadataKey> = {
  * - Numbers are Big Endian unless otherwise specified.
  */
 export class FLACReader extends FileReader {
-  wantedKeys: MetadataKeys = [];
-  frames = {} as Record<MetadataKey, string>;
-
-  constructor(uri: string, options: MetadataKeys) {
-    super(uri);
-    this.wantedKeys = options;
-  }
-
   /** Get FLAC metadata. */
   async getMetadata() {
     await this.initialize();
@@ -54,15 +45,7 @@ export class FLACReader extends FileReader {
     // Return the results.
     return {
       format: `FLAC`,
-      metadata: Object.fromEntries(
-        Object.entries(this.frames).map(([key, value]) => {
-          let valAsNum: number | undefined;
-          if (key === 'track') valAsNum = Number(value.split('/')[0]);
-          else if (key === 'year') valAsNum = Number(value.slice(0, 4));
-
-          return [key, valAsNum && !isNaN(valAsNum) ? valAsNum : value];
-        })
-      ) as MetadataExcerpt<typeof this.wantedKeys>,
+      metadata: this.formatMetadata(),
     };
   }
 
@@ -93,7 +76,7 @@ export class FLACReader extends FileReader {
     await this.initDataFrom({ size: length, offset: this.filePosition });
     if (type === 4) {
       this.processVorbisCommentBlockData();
-    } else if (type === 6 && arrayIncludes(this.wantedKeys, 'artwork')) {
+    } else if (type === 6 && this.wantedTags.includes('artwork')) {
       this.processPictureBlockData(length);
     } else {
       this.skip(length);
@@ -102,7 +85,7 @@ export class FLACReader extends FileReader {
     // We need to make sure `this.finished` is `false` when reading this
     // file as we don't know the amount of space Metadata Blocks take up
     // cumulatively in the file unlike with ID3.
-    if (isLast || Object.keys(this.frames).length === this.wantedKeys.length) {
+    if (isLast || Object.keys(this.tags).length === this.wantedTags.length) {
       this.finished = true;
     } else {
       this.finished = false;
@@ -151,11 +134,11 @@ export class FLACReader extends FileReader {
 
       const metadataKey = VCFNMetadataMap[fieldName as FieldName] ?? '';
       // If we want to return this metadata tag.
-      const isWanted = arrayIncludes(this.wantedKeys, metadataKey);
+      const isWanted = this.wantedTags.includes(metadataKey);
       // Make sure we don't overrride an existing value (ie: there can be
       // multiple `ARTIST` values).
-      if (isWanted && this.frames[metadataKey] === undefined) {
-        this.frames[metadataKey] = value;
+      if (isWanted && this.tags[metadataKey] === undefined) {
+        this.tags[metadataKey] = value;
       }
     }
   }
@@ -191,6 +174,6 @@ export class FLACReader extends FileReader {
 
     const pictureLength = Buffer.bytesToInt(this.read(4));
     const pictureData = this.read(pictureLength);
-    this.frames.artwork = `data:${mimeType};base64,${Buffer.bytesToBase64(pictureData)}`;
+    this.tags.artwork = `data:${mimeType};base64,${Buffer.bytesToBase64(pictureData)}`;
   }
 }

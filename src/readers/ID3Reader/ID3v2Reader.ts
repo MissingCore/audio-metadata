@@ -1,4 +1,4 @@
-import type { MetadataExcerpt, MetadataKey, MetadataKeys } from '../types';
+import type { MetadataKey, MetadataKeys } from '../types';
 import { getFileStat, read } from '../../libs/fs';
 import type { Encoding } from '../../utils/Buffer';
 import { Buffer } from '../../utils/Buffer';
@@ -57,8 +57,6 @@ const FrameMetadataMap: Record<FrameId, MetadataKey> = {
  * end of the file (or before an ID3v1 tag).
  */
 export class ID3v2Reader extends FileReader {
-  wantedKeys: MetadataKeys = [];
-  frames = {} as Record<MetadataKey, string>;
   version = 0; // The minor version of the spec (`2 | 3 | 4`).
 
   /* Extra flags */
@@ -67,8 +65,7 @@ export class ID3v2Reader extends FileReader {
   footer?: 'eof' | 'pre-v1'; // If tag is at the end of file in ID3v2.4.
 
   constructor(uri: string, options: MetadataKeys, footer?: 'eof' | 'pre-v1') {
-    super(uri);
-    this.wantedKeys = options;
+    super(uri, options);
     this.footer = footer;
   }
 
@@ -88,15 +85,7 @@ export class ID3v2Reader extends FileReader {
     // Return the results.
     return {
       format: `ID3v2.${this.version}`,
-      metadata: Object.fromEntries(
-        Object.entries(this.frames).map(([key, value]) => {
-          let valAsNum: number | undefined;
-          if (key === 'track') valAsNum = Number(value.split('/')[0]);
-          else if (key === 'year') valAsNum = Number(value.slice(0, 4));
-
-          return [key, valAsNum && !isNaN(valAsNum) ? valAsNum : value];
-        })
-      ) as MetadataExcerpt<typeof this.wantedKeys>,
+      metadata: this.formatMetadata(),
     };
   }
 
@@ -178,10 +167,7 @@ export class ID3v2Reader extends FileReader {
     }
 
     // Handle the frame data.
-    const isWanted = arrayIncludes(
-      this.wantedKeys,
-      FrameMetadataMap[id as FrameId]
-    );
+    const isWanted = this.wantedTags.includes(FrameMetadataMap[id as FrameId]);
     if (isWanted && arrayIncludes(FrameTypes.text, id)) {
       this.processTextFrame(id, size, frameUnsych);
     } else if (isWanted && arrayIncludes(FrameTypes.picture, id)) {
@@ -191,7 +177,7 @@ export class ID3v2Reader extends FileReader {
     }
 
     // Exit early once we have all the data needed.
-    if (Object.keys(this.frames).length === this.wantedKeys.length) {
+    if (Object.keys(this.tags).length === this.wantedTags.length) {
       this.finished = true;
     }
   }
@@ -252,7 +238,7 @@ export class ID3v2Reader extends FileReader {
     const textData = Buffer.bytesToString(chunk, encoding as Encoding);
 
     const metadataKey = FrameMetadataMap[frameId as FrameId];
-    this.frames[metadataKey] = textData;
+    this.tags[metadataKey] = textData;
   }
 
   /**
@@ -298,6 +284,6 @@ export class ID3v2Reader extends FileReader {
     pictureDataSize -= description.length;
 
     const pictureData = this.read(pictureDataSize);
-    this.frames.artwork = `data:${mimeType};base64,${Buffer.bytesToBase64(pictureData)}`;
+    this.tags.artwork = `data:${mimeType};base64,${Buffer.bytesToBase64(pictureData)}`;
   }
 }
