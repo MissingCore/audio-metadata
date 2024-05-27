@@ -9,7 +9,7 @@ import { FileError } from '../../utils/errors';
 export async function readMP3Metadata<TOptions extends MetadataKeys>(
   uri: string,
   options: TOptions
-): Promise<MetadataResponse<TOptions>> {
+) {
   const fileInfo = await getFileStat(uri);
   // File should exist, so below error shouldn't be thrown.
   if (!fileInfo.exists) throw new FileError("File doesn't exist.");
@@ -33,5 +33,5 @@ export async function readMP3Metadata<TOptions extends MetadataKeys>(
     }
   }
 
-  return { fileType: 'mp3', ...response };
+  return response;
 }

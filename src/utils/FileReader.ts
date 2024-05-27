@@ -13,7 +13,7 @@ export class FileReader {
   finished = false;
 
   wantedTags: MetadataKeys = [];
-  tags = {} as Record<MetadataKey, string>;
+  tags = {} as Record<MetadataKey, string | undefined>;
 
   constructor(uri: string, options: MetadataKeys) {
     this.fileUri = uri;
@@ -99,8 +99,8 @@ export class FileReader {
           .filter(([key]) => arrayIncludes(this.wantedTags, key))
           .map(([key, value]) => {
             let valAsNum: number | undefined;
-            if (key === 'track') valAsNum = Number(value.split('/')[0]);
-            else if (key === 'year') valAsNum = Number(value.slice(0, 4));
+            if (key === 'track') valAsNum = Number(value?.split('/')[0]);
+            else if (key === 'year') valAsNum = Number(value?.slice(0, 4));
 
             return [key, valAsNum && !isNaN(valAsNum) ? valAsNum : value];
           })

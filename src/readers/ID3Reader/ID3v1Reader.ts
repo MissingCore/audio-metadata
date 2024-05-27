@@ -1,4 +1,3 @@
-import type { MetadataExcerpt } from '../types';
 import { getFileStat } from '../../libs/fs';
 import { Buffer } from '../../utils/Buffer';
 import { FileError } from '../../utils/errors';
@@ -11,12 +10,20 @@ import { FileReader } from '../../utils/FileReader';
 
 /** Reads ID3v1 metadata located at the end of a MP3 file. */
 export class ID3v1Reader extends FileReader {
+  version = '1'; // Either `"1" | "1.1"`
+
   /** Get MP3 metadata. */
   async getMetadata() {
     await this.initialize();
 
-    // Process the file & return results.
-    return this.processData();
+    // Process the file.
+    this.processData();
+
+    // Return the results.
+    return {
+      format: `ID3v${this.version}`,
+      metadata: this.formatMetadata(),
+    };
   }
 
   /**
@@ -45,23 +52,12 @@ export class ID3v1Reader extends FileReader {
    *  - [1 Byte] Genre
    */
   processData() {
-    const name = Buffer.bytesToString(this.read(30)) || undefined;
-    const artist = Buffer.bytesToString(this.read(30)) || undefined;
-    const album = Buffer.bytesToString(this.read(30)) || undefined;
-    const year = Number(Buffer.bytesToString(this.read(4))) || undefined;
+    this.tags.name = Buffer.bytesToString(this.read(30)) || undefined;
+    this.tags.artist = Buffer.bytesToString(this.read(30)) || undefined;
+    this.tags.album = Buffer.bytesToString(this.read(30)) || undefined;
+    this.tags.year = Buffer.bytesToString(this.read(4)) || undefined;
     const _comment = this.read(30);
-    const version = _comment[28] === 0 && _comment[29] !== 0 ? '1.1' : '1';
-    const track = version === '1.1' ? _comment[29] : undefined;
-
-    return {
-      format: `ID3v${version}`,
-      metadata: {
-        ...(this.wantedTags.includes('album') ? { album } : {}),
-        ...(this.wantedTags.includes('artist') ? { artist } : {}),
-        ...(this.wantedTags.includes('name') ? { name } : {}),
-        ...(this.wantedTags.includes('track') ? { track } : {}),
-        ...(this.wantedTags.includes('year') ? { year } : {}),
-      } as MetadataExcerpt<typeof this.wantedTags>,
-    };
+    this.version = _comment[28] === 0 && _comment[29] !== 0 ? '1.1' : '1';
+    this.tags.track = this.version === '1.1' ? `${_comment[29]}` : undefined;
   }
 }

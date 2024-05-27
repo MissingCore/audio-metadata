@@ -2,6 +2,7 @@ import { FLACReader } from './FLACReader';
 import { readMP3Metadata } from './ID3Reader';
 
 import type { MetadataKeys, MetadataResponse } from './types';
+import type { AudioFileType } from '..';
 import { FileError } from '../utils/errors';
 
 /**
@@ -12,14 +13,16 @@ export async function getAudioMetadata<TOptions extends MetadataKeys>(
   uri: string,
   options: TOptions
 ): Promise<MetadataResponse<TOptions>> {
-  if (uri.endsWith('flac')) {
-    return {
-      fileType: `flac`,
-      ...(await new FLACReader(uri, options).getMetadata()),
-    };
-  } else if (uri.endsWith('mp3')) {
-    return await readMP3Metadata(uri, options);
+  const extension = uri.split('.').at(-1);
+  let data = {} as Omit<MetadataResponse<TOptions>, 'fileType'>;
+
+  if (extension === 'flac') {
+    data = await new FLACReader(uri, options).getMetadata();
+  } else if (extension === 'mp3') {
+    data = await readMP3Metadata(uri, options);
+  } else {
+    throw new FileError('File is currently not supported.');
   }
 
-  throw new FileError('File is currently not supported.');
+  return { fileType: extension as AudioFileType, ...data };
 }
