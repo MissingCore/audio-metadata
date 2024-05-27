@@ -38,6 +38,47 @@ npm i @missingcore/audio-metadata @dr.pogodin/react-native-fs
 
 ## Usage
 
+```tsx
+import { getAudioMetadata } from '@missingcore/audio-metadata';
+
+const uri = 'file:///storage/emulated/0/Music/Silence.mp3';
+const wantedTags = ['album', 'artist', 'name', 'track', 'year'] as const;
+
+// Of course with `await`, use this inside an async function or use Promise.then().
+const data = await getAudioMetadata(uri, wantedTags);
+/*
+  Returns:
+    {
+      fileType: 'mp3',
+      format: 'ID3v2.3',
+      metadata: {
+          album: 'Void';
+          artist: 'Nothing;
+          name: 'Silence';
+          track: 1;
+          year: 2024;
+      }
+    }
+*/
+```
+
+### Supported Tags
+
+> The full list of supported tags [found here](https://github.com/MissingCore/audio-metadata/blob/main/src/readers/types.ts#L3).
+
+```tsx
+type AudioMetadata = {
+  album: string;
+  artist: string;
+  artwork: string; // A base64 image string.
+  name: string;
+  track: number;
+  year: number;
+};
+```
+
+**❗Note❗** that not all of the requested metadata may be present in the file read. In the returned `metadata` value, all the fields we want are "optional" (ie: its value can be `undefined`).
+
 ## Related
 
 - [jsmediatags](https://github.com/aadsm/jsmediatags)
