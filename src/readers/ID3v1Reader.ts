@@ -1,7 +1,7 @@
-import { getFileStat } from '../../libs/fs';
-import { Buffer } from '../../utils/Buffer';
-import { FileError } from '../../utils/errors';
-import { FileReader } from '../../utils/FileReader';
+import { getFileStat } from '../libs/fs';
+import { Buffer } from '../utils/Buffer';
+import { FileError } from '../utils/errors';
+import { FileReader } from '../utils/FileReader';
 
 /*
   Useful documentation:

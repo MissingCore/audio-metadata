@@ -1,7 +1,11 @@
 import { Buffer } from './Buffer';
 import { arrayIncludes } from './object';
-import type { MetadataExcerpt, MetadataKey, MetadataKeys } from '..';
 import { read } from '../libs/fs';
+import type {
+  MetadataExcerpt,
+  MetadataKey,
+  MetadataKeys,
+} from '../MetadataExtractor.types';
 
 /** Read a file encoded in base64, storing the contents in a buffer. */
 export class FileReader {

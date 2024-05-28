@@ -1,10 +1,10 @@
-import type { MetadataKey, MetadataKeys } from '../types';
-import { getFileStat, read } from '../../libs/fs';
-import type { Encoding } from '../../utils/Buffer';
-import { Buffer } from '../../utils/Buffer';
-import { FileError } from '../../utils/errors';
-import { FileReader } from '../../utils/FileReader';
-import { arrayIncludes } from '../../utils/object';
+import { getFileStat, read } from '../libs/fs';
+import type { MetadataKey, MetadataKeys } from '../MetadataExtractor.types';
+import type { Encoding } from '../utils/Buffer';
+import { Buffer } from '../utils/Buffer';
+import { FileError } from '../utils/errors';
+import { FileReader } from '../utils/FileReader';
+import { arrayIncludes } from '../utils/object';
 
 /*
   Useful documentation:

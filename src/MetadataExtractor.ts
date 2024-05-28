@@ -1,9 +1,8 @@
-import { FLACReader } from './FLACReader';
-import { readMP3Metadata } from './ID3Reader';
-
-import type { MetadataKeys, MetadataResponse } from './types';
-import type { AudioFileType } from '..';
-import { FileError } from '../utils/errors';
+import type { AudioFileType } from './constants';
+import type { MetadataKeys, MetadataResponse } from './MetadataExtractor.types';
+import { FLACReader } from './readers/FLACReader';
+import { readMP3Metadata } from './readers/ID3Reader';
+import { FileError } from './utils/errors';
 
 /**
  * Get the metadata of an audio file if it exists. Throws an error if

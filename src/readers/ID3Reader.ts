@@ -1,9 +1,12 @@
 import { ID3v1Reader } from './ID3v1Reader';
 import { ID3v2Reader } from './ID3v2Reader';
-import type { MetadataKeys, MetadataResponse } from '../types';
-import { getFileStat, read } from '../../libs/fs';
-import { Buffer } from '../../utils/Buffer';
-import { FileError } from '../../utils/errors';
+import { getFileStat, read } from '../libs/fs';
+import type {
+  MetadataKeys,
+  MetadataResponse,
+} from '../MetadataExtractor.types';
+import { Buffer } from '../utils/Buffer';
+import { FileError } from '../utils/errors';
 
 /** Get the metadata from an MP3 file. */
 export async function readMP3Metadata<TOptions extends MetadataKeys>(

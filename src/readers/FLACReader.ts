@@ -1,4 +1,4 @@
-import type { MetadataKey } from './types';
+import type { MetadataKey } from '../MetadataExtractor.types';
 import { Buffer } from '../utils/Buffer';
 import { FileError } from '../utils/errors';
 import { FileReader } from '../utils/FileReader';

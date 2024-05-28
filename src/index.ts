@@ -1,4 +1,4 @@
 export * from './constants';
 
-export * from './readers';
-export * from './readers/types';
+export * from './MetadataExtractor';
+export * from './MetadataExtractor.types';

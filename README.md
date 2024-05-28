@@ -64,7 +64,7 @@ const data = await getAudioMetadata(uri, wantedTags);
 
 ### Supported Tags
 
-> The full list of supported tags [found here](https://github.com/MissingCore/audio-metadata/blob/main/src/readers/types.ts#L3).
+> The full list of supported tags [found here](https://github.com/MissingCore/audio-metadata/blob/main/src/MetadataExtractor.types.ts#L3).
 
 ```tsx
 type AudioMetadata = {

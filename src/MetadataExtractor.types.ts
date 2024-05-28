@@ -1,4 +1,4 @@
-import type { AudioFileType } from '../constants';
+import type { AudioFileType } from './constants';
 
 export type AudioMetadata = {
   album: string;
