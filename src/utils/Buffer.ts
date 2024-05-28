@@ -73,13 +73,6 @@ export class Buffer {
     return byte.toString(2).padStart(8, '0');
   }
 
-  /** Reads a range of bits in a byte (in Big Endian). */
-  static readBitsInByte(byte: number, start: number, length: number) {
-    const binary = this.byteToBinary(byte);
-    const range = binary.slice(start, start + length);
-    return parseInt(range.padStart(8, '0'), 2);
-  }
-
   /** Convert bytes into a base64 string. */
   static bytesToBase64(bytes: number[]) {
     return btoa(bytes.reduce((s, byte) => s + String.fromCharCode(byte), ''));
@@ -108,6 +101,7 @@ export class Buffer {
       /* [UTF-16 w/ BOM] — Big Endian if starts with [0xFE, 0xFF] */
       case 1: {
         const isBE = bytes[0] === 0xfe && bytes[1] === 0xff;
+        // Remove the "Byte-order mark" [255, 254] or [254, 255] at the start.
         return _bytesToStr(getDoubleBytes(bytes.slice(2), isBE));
       }
       /* [UTF-16BE w/o BOM] — Always Big Endian */
@@ -124,6 +118,13 @@ export class Buffer {
       default:
         return _bytesToStr(bytes);
     }
+  }
+
+  /** Reads a range of bits in a byte (in Big Endian). */
+  static readBitsInByte(byte: number, start: number, length: number) {
+    const binary = this.byteToBinary(byte);
+    const range = binary.slice(start, start + length);
+    return parseInt(range.padStart(8, '0'), 2);
   }
 }
 
