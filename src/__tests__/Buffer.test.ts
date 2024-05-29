@@ -13,6 +13,13 @@ const text = {
   ],
 };
 
+/** Create a `Buffer` class instance pre-populated with data. */
+function setup() {
+  const buffer = new Buffer();
+  buffer.setBuffer(text.buffer);
+  return buffer;
+}
+
 describe('`Buffer` Class', () => {
   describe('Static Methods', () => {
     it('Buffer.base64ToBuffer()', () => {
@@ -42,26 +49,27 @@ describe('`Buffer` Class', () => {
     });
 
     describe('Buffer.bytesToString()', () => {
-      it('UTF-16 w/ BOM [Little Endian]', () => {
-        const bytes = [
-          255, 254, 83, 48, 147, 48, 107, 48, 97, 48, 111, 48, 22, 78, 76, 117,
-          0, 0,
-        ];
-        expect(Buffer.bytesToString(bytes, 1)).toEqual('こんにちは世界');
-      });
+      const bytesBE = [
+        254, 255, 48, 83, 48, 147, 48, 107, 48, 97, 48, 111, 78, 22, 117, 76, 0,
+        0,
+      ];
 
-      it('UTF-16 w/ BOM [Big Endian]', () => {
-        const bytes = [
-          254, 255, 48, 83, 48, 147, 48, 107, 48, 97, 48, 111, 78, 22, 117, 76,
-          0, 0,
-        ];
-        expect(Buffer.bytesToString(bytes, 1)).toEqual('こんにちは世界');
+      describe('UTF-16 w/ BOM', () => {
+        it('Little Endian', () => {
+          const bytes = [
+            255, 254, 83, 48, 147, 48, 107, 48, 97, 48, 111, 48, 22, 78, 76,
+            117, 0, 0,
+          ];
+          expect(Buffer.bytesToString(bytes, 1)).toEqual('こんにちは世界');
+        });
+
+        it('Big Endian', () => {
+          expect(Buffer.bytesToString(bytesBE, 1)).toEqual('こんにちは世界');
+        });
       });
 
       it('UTF-16BE w/o BOM', () => {
-        const bytes = [
-          48, 83, 48, 147, 48, 107, 48, 97, 48, 111, 78, 22, 117, 76, 0, 0,
-        ];
+        const bytes = bytesBE.slice(2);
         expect(Buffer.bytesToString(bytes, 2)).toEqual('こんにちは世界');
       });
 
@@ -85,69 +93,99 @@ describe('`Buffer` Class', () => {
   });
 
   describe('Instance Properties', () => {
-    let buffer: Buffer;
-
-    beforeEach(() => {
-      buffer = new Buffer();
-      buffer.setBuffer(text.buffer);
-    });
-
     it('Buffer.prototype.buffer', () => {
+      const buffer = setup();
       expect(buffer.buffer).toEqual(text.buffer);
     });
 
-    it('Buffer.prototype.eof', () => {
-      expect(buffer.eof).toEqual(false);
-      buffer.move(100);
-      expect(buffer.eof).toEqual(true);
+    describe('Buffer.prototype.eof', () => {
+      const buffer = setup();
+
+      it('Returns `false` on initialization.', () => {
+        expect(buffer.eof).toEqual(false);
+      });
+
+      it('Returns `true` after reaching/passing end of buffer.', () => {
+        buffer.move(100);
+        expect(buffer.eof).toEqual(true);
+      });
     });
 
     it('Buffer.prototype.length', () => {
+      const buffer = setup();
       expect(buffer.length).toEqual(21);
     });
 
-    it('Buffer.prototype.position', () => {
-      expect(buffer.position).toEqual(0);
-      buffer.move(10);
-      expect(buffer.position).toEqual(10);
-      buffer.move(100);
-      expect(buffer.position).toEqual(21);
+    describe('Buffer.prototype.position', () => {
+      const buffer = setup();
+
+      it('Returns `0` on initialization.', () => {
+        expect(buffer.position).toEqual(0);
+      });
+
+      it('Returns `current position + {distance moved}` after moving.', () => {
+        buffer.move(10);
+        expect(buffer.position).toEqual(10);
+      });
+
+      it('Returns `{buffer size}` after moving out of buffer range.', () => {
+        buffer.move(100);
+        expect(buffer.position).toEqual(21);
+      });
     });
   });
 
   describe('Instance Methods', () => {
-    let buffer: Buffer;
-
-    beforeEach(() => {
-      buffer = new Buffer();
-      buffer.setBuffer(text.buffer);
-    });
-
     it('Buffer.prototype.setBuffer()', () => {
+      const buffer = setup();
       const newBuffer = Uint8Array.from([71, 111, 111]);
       buffer.setBuffer(newBuffer);
       expect(buffer.buffer).toEqual(newBuffer);
     });
 
-    it('Buffer.prototype.move()', () => {
-      expect(buffer.move(1)).toEqual(1);
-      expect(buffer.move(10)).toEqual(10);
-      expect(buffer.move(100)).toEqual(10);
+    describe('Buffer.prototype.move()', () => {
+      const buffer = setup();
+
+      it('Returns `{distance moved}`.', () => {
+        expect(buffer.move(1)).toEqual(1);
+        expect(buffer.move(10)).toEqual(10);
+      });
+
+      it('Returns `{distance to eof from current position}` if moving out of buffer range.', () => {
+        expect(buffer.move(100)).toEqual(10);
+      });
     });
 
-    it('Buffer.prototype.readUInt8()', () => {
-      expect(buffer.readUInt8()).toEqual(240);
-      expect(buffer.readUInt8()).toEqual(159);
+    describe('Buffer.prototype.readUInt8()', () => {
+      const buffer = setup();
+
+      it('Returns 1st byte.', () => {
+        expect(buffer.readUInt8()).toEqual(240);
+      });
+
+      it('Returns 2nd byte.', () => {
+        expect(buffer.readUInt8()).toEqual(159);
+      });
     });
 
-    it('Buffer.prototype.readBytes()', () => {
-      expect(buffer.readBytes(1)).toEqual([240]);
-      expect(buffer.readBytes(10)).toEqual([
-        159, 140, 142, 32, 72, 101, 108, 108, 111, 32,
-      ]);
-      expect(buffer.readBytes(100)).toEqual([
-        87, 111, 114, 108, 100, 32, 240, 159, 140, 142,
-      ]);
+    describe('Buffer.prototype.readBytes()', () => {
+      const buffer = setup();
+
+      it('Returns array containing 1st byte.', () => {
+        expect(buffer.readBytes(1)).toEqual([240]);
+      });
+
+      it('Returns array containing next 10 bytes.', () => {
+        expect(buffer.readBytes(10)).toEqual([
+          159, 140, 142, 32, 72, 101, 108, 108, 111, 32,
+        ]);
+      });
+
+      it('Returns array of remaining bytes.', () => {
+        expect(buffer.readBytes(100)).toEqual([
+          87, 111, 114, 108, 100, 32, 240, 159, 140, 142,
+        ]);
+      });
     });
   });
 });
