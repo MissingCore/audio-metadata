@@ -178,6 +178,12 @@ describe('`getAudioMetadata()` function.', () => {
           metadata: results.base,
         });
       });
+
+      it('Throws error if file is tagless.', async () => {
+        await expect(getMetadata('Silence-tagless.mp3')).rejects.toThrow(
+          new FileError('Not an ID3v1 tag.')
+        );
+      });
     });
   });
 });

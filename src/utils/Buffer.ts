@@ -102,11 +102,11 @@ export class Buffer {
       case 1: {
         const isBE = bytes[0] === 0xfe && bytes[1] === 0xff;
         // Remove the "Byte-order mark" [255, 254] or [254, 255] at the start.
-        return _bytesToStr(getDoubleBytes(bytes.slice(2), isBE));
+        return _bytesToStr(_getDoubleBytes(bytes.slice(2), isBE));
       }
       /* [UTF-16BE w/o BOM] — Always Big Endian */
       case 2:
-        return _bytesToStr(getDoubleBytes(bytes, true));
+        return _bytesToStr(_getDoubleBytes(bytes, true));
       /* [UTF-8] */
       case 3: {
         const tdInstant = new TextDecoder();
@@ -139,7 +139,7 @@ function _bytesToStr(bytes: number[]) {
 }
 
 /** Join 2 unsigned bytes together based on endianness. */
-function getDoubleBytes(bytes: number[], isBigEndian = false) {
+function _getDoubleBytes(bytes: number[], isBigEndian = false) {
   const [offset1, offset2] = isBigEndian ? [0, 1] : [1, 0];
   const doubleBytes: number[] = [];
   for (let i = 0; i < bytes.length; i += 2) {
