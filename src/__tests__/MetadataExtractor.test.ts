@@ -119,6 +119,14 @@ describe('`getAudioMetadata()` function.', () => {
 
         it.todo('Has unsynchronisation.');
       });
+
+      it('Prefer ID3v2 over ID3v1', async () => {
+        await expect(getMetadata('Silence.mp3')).resolves.toEqual({
+          fileType: 'mp3',
+          format: 'ID3v2.3',
+          metadata: results.base,
+        });
+      });
     });
 
     describe('`.flac`', () => {
