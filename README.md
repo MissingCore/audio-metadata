@@ -2,6 +2,7 @@
 
 An audio file metadata reader built for **React Native** (mobile only) supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
 
+> [!NOTE]  
 > Supports React Native's **"New Architecture"**.
 
 ## Supported Files
@@ -33,7 +34,7 @@ expo install @missingcore/audio-metadata expo-file-system
 ### With `@dr.pogodin/react-native-fs`
 
 ```sh
-npm i @missingcore/audio-metadata @dr.pogodin/react-native-fs
+npm install @missingcore/audio-metadata @dr.pogodin/react-native-fs
 ```
 
 ## Usage
@@ -44,7 +45,7 @@ import { getAudioMetadata } from '@missingcore/audio-metadata';
 const uri = 'file:///storage/emulated/0/Music/Silence.mp3';
 const wantedTags = ['album', 'artist', 'name', 'track', 'year'] as const;
 
-// Of course with `await`, use this inside an async function or use Promise.then().
+// Of course with `await`, use this inside an async function or use `Promise.then()`.
 const data = await getAudioMetadata(uri, wantedTags);
 /*
   Returns:
