@@ -1,0 +1,41 @@
+name: '🐛 Bug Report'
+description: 'Report a bug found when using `@missingcore/audio-metadata`'
+labels: ['Bug', 'needs review']
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug report! Please fill out this entire form. The most important piece is a minimal reproducible example.
+  - type: input
+    attributes:
+      label: Package Version
+      description: |
+        List the version of `@missingcore/audio-metadata` you are currently using.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Are the dependencies being used satisfy the minimum specification?
+      description: |
+        - `react-native >=0.74.0`
+        - `expo-file-system >=17.0.0` or `@dr.pogodin/react-native-fs >=2.22.0`
+      options:
+        - 'Yes'
+        - 'No'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Summary
+      description: |
+        Clearly describe what the expected behavior is and what instead is actually happening. Be concise and precise in your description.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Minimal reproducible example
+      description: |
+        Either:
+          - A link to a GitHub repository containing a minimal reproducible example.
+          - Code inside of [code blocks (triple backticks)](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks) with the file that caused the issue if possible.
+    validations:
+      required: true

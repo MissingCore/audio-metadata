@@ -1,0 +1,31 @@
+name: '💽 Audio Format Request'
+description: 'Request support for an unsupported audio format'
+labels: ['Request: Audio Format', 'needs review']
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this audio format request! Please fill out this entire form. The most important piece is some documentation on the format specification to speed up implementation.
+  - type: input
+    attributes:
+      label: File Extension
+      description: |
+        List the extension of the file you want us to add support to (ie: `.flac`, `.mp3`).
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Metadata Format
+      description: |
+        Specify the metadata container type (ie: FLAC, ID3).
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Documentation / References
+      description: |
+        Provide some documentation on the metadata specifications for this file type to speed up implementation.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Other Notes

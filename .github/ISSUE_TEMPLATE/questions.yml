@@ -1,0 +1,14 @@
+name: '❓ Questions'
+description: 'You have a question about `@missingcore/audio-metadata`'
+labels: ['Question', 'needs review']
+body:
+  - type: markdown
+    attributes:
+      value: Before submitting this form, check to see if this question has been answered before. If you think this can be answered by a community member, create a discussion instead in the [Discussions Tab](https://github.com/MissingCore/Music/discussions) instead
+  - type: textarea
+    attributes:
+      label: Question
+      description: |
+        What question do you have about `@missingcore/audio-metadata`?
+    validations:
+      required: true

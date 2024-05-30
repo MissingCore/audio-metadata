@@ -1,0 +1,24 @@
+name: '🙋 Feature Request'
+description: 'Want us to add something to `@missingcore/audio-metadata`?'
+labels: ['Request: Feature', 'needs review']
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this feature request! Please fill out this entire form.
+  - type: markdown
+    attributes:
+      value: Note that this package prioritizes features that we'll use in `MissingCore/Music`. Be aware that requests you make may not be implemented.
+  - type: textarea
+    attributes:
+      label: Feature Request
+      description: |
+        Clearly describe what you want to be added to this package.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Implementation Idea / Changes
+      description: |
+        Clearly describe how your idea may change the current API if applicable and suggest how this could be implemented.
+    validations:
+      required: true
