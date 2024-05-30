@@ -20,7 +20,7 @@ export async function getAudioMetadata<TOptions extends MetadataKeys>(
   } else if (extension === 'mp3') {
     data = await readMP3Metadata(uri, options);
   } else {
-    throw new FileError('File is currently not supported.');
+    throw new FileError(`\`.${extension}\` files are currently not supported.`);
   }
 
   return { fileType: extension as AudioFileType, ...data };

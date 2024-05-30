@@ -14,9 +14,9 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { getAudioMetadata } from '@missingcore/audio-metadata';
+import { AudioFileTypes, getAudioMetadata } from '@missingcore/audio-metadata';
 
-import { isFulfilled } from './utils/promise';
+import { isFulfilled, isRejected } from './utils/promise';
 
 const queryClient = new QueryClient();
 
@@ -36,18 +36,23 @@ async function getTracks() {
       mediaType: 'audio',
       first: totalCount,
     })
-  ).assets.filter((a) => a.filename.endsWith('.mp3'));
+  ).assets.filter((a) =>
+    AudioFileTypes.some((ext) => a.filename.endsWith(`.${ext}`))
+  );
 
   const wantedTags = withArtwork
     ? (['album', 'artist', 'artwork', 'name', 'track', 'year'] as const)
     : (['album', 'artist', 'name', 'track', 'year'] as const);
 
   const tracksMetadata = await Promise.allSettled(
-    mp3Files.map(async ({ id, uri }) => ({
-      id,
-      ...(await getAudioMetadata(uri, wantedTags)).metadata,
-    }))
+    mp3Files.map(async ({ id, uri }) => {
+      const data = await getAudioMetadata(uri, wantedTags);
+      return { format: data.format, id, ...data.metadata };
+    })
   );
+
+  const errors = tracksMetadata.filter(isRejected).map(({ reason }) => reason);
+  console.log('Errors:', errors);
 
   return {
     duration: ((performance.now() - start) / 1000).toFixed(4),
@@ -135,6 +140,7 @@ export function App() {
                 />
               </View>
               <View style={styles.infoContainer}>
+                <Text style={styles.bold}>{item.format}</Text>
                 <Text numberOfLines={1}>{item.name}</Text>
                 <Text numberOfLines={1}>{item.artist}</Text>
                 {item.album && <Text numberOfLines={1}>{item.album}</Text>}
@@ -182,5 +188,8 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
+  },
+  bold: {
+    fontWeight: 'bold',
   },
 });
