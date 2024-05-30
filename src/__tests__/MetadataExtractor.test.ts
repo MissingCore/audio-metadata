@@ -46,6 +46,12 @@ async function getMetadata(filename: string, options?: MetadataKeys) {
   return getAudioMetadata(uri, wantedTags);
 }
 
+/** Determines if a string is a base64 image. */
+async function isBase64Image(str: string | undefined) {
+  if (!str) return false;
+  return str.startsWith('data:image/png;base64');
+}
+
 const _nums = { track: 1, year: 2024 };
 /** Expected structure of returned metatdata. */
 const results = {
@@ -69,6 +75,29 @@ describe('`getAudioMetadata()` function.', () => {
   });
 
   describe('With supported files.', () => {
+    describe('`.flac`', () => {
+      it('Supports `FLAC`.', async () => {
+        await expect(getMetadata('Silence.flac')).resolves.toEqual({
+          fileType: 'flac',
+          format: 'FLAC',
+          metadata: results.base,
+        });
+      });
+
+      it('`artwork` is a base64 PNG string.', async () => {
+        const data = await getMetadata('Silence.flac', ['artwork']);
+        expect(isBase64Image(data.metadata.artwork)).toBeTruthy();
+      });
+
+      it('Supports UTF-8 values.', async () => {
+        await expect(getMetadata('Silence-utf8.flac')).resolves.toEqual({
+          fileType: 'flac',
+          format: 'FLAC',
+          metadata: results.utf8,
+        });
+      });
+    });
+
     describe('`.mp3`', () => {
       it('Supports `ID3v1`.', async () => {
         await expect(getMetadata('Silence (ID3v1).mp3')).resolves.toEqual({
@@ -78,21 +107,38 @@ describe('`getAudioMetadata()` function.', () => {
         });
       });
 
-      it('Supports `ID3v1.1`.', async () => {
-        await expect(getMetadata('Silence (ID3v1.1).mp3')).resolves.toEqual({
-          fileType: 'mp3',
-          format: 'ID3v1.1',
-          metadata: results.base,
+      describe('Supports `ID3v1.1`.', () => {
+        it('No special feature.', async () => {
+          await expect(getMetadata('Silence (ID3v1.1).mp3')).resolves.toEqual({
+            fileType: 'mp3',
+            format: 'ID3v1.1',
+            metadata: results.base,
+          });
+        });
+
+        it('`artwork` is `undefined`.', async () => {
+          const data = await getMetadata('Silence (ID3v1.1).mp3', ['artwork']);
+          expect(data.metadata.artwork).toEqual(undefined);
         });
       });
 
       it.todo('Supports `ID3v2.2`.');
 
-      it('Supports `ID3v2.3`.', async () => {
-        await expect(getMetadata('Silence (ID3v2.3).mp3')).resolves.toEqual({
-          fileType: 'mp3',
-          format: 'ID3v2.3',
-          metadata: results.base,
+      describe('Supports `ID3v2.3`.', () => {
+        it('No special feature.', async () => {
+          await expect(getMetadata('Silence (ID3v2.3).mp3')).resolves.toEqual({
+            fileType: 'mp3',
+            format: 'ID3v2.3',
+            metadata: results.base,
+          });
+        });
+
+        it('Contains UTF-16 text.', async () => {
+          await expect(getMetadata('Silence-utf16.mp3')).resolves.toEqual({
+            fileType: 'mp3',
+            format: 'ID3v2.3',
+            metadata: results.utf8,
+          });
         });
       });
 
@@ -103,6 +149,11 @@ describe('`getAudioMetadata()` function.', () => {
             format: 'ID3v2.4',
             metadata: results.base,
           });
+        });
+
+        it('`artwork` is a base64 PNG string.', async () => {
+          const data = await getMetadata('Silence (ID3v2.4).mp3', ['artwork']);
+          expect(isBase64Image(data.metadata.artwork)).toBeTruthy();
         });
 
         it('Contains UTF-8 text.', async () => {
@@ -120,29 +171,11 @@ describe('`getAudioMetadata()` function.', () => {
         it.todo('Has unsynchronisation.');
       });
 
-      it('Prefer ID3v2 over ID3v1', async () => {
+      it('Prefer `ID3v2` over `ID3v1`.', async () => {
         await expect(getMetadata('Silence.mp3')).resolves.toEqual({
           fileType: 'mp3',
           format: 'ID3v2.3',
           metadata: results.base,
-        });
-      });
-    });
-
-    describe('`.flac`', () => {
-      it('Supports `FLAC`.', async () => {
-        await expect(getMetadata('Silence.flac')).resolves.toEqual({
-          fileType: 'flac',
-          format: 'FLAC',
-          metadata: results.base,
-        });
-      });
-
-      it('Supports UTF-8 values.', async () => {
-        await expect(getMetadata('Silence-utf8.flac')).resolves.toEqual({
-          fileType: 'flac',
-          format: 'FLAC',
-          metadata: results.utf8,
         });
       });
     });
