@@ -1,6 +1,6 @@
 {
   "name": "@missingcore/audio-metadata",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "An audio file metadata reader built for React Native.",
   "main": "lib/module/index",
   "module": "lib/module/index",
@@ -62,7 +62,7 @@
     "@dr.pogodin/react-native-fs": "^2.25.2",
     "@evilmartians/lefthook": "^1.6.13",
     "@react-native/eslint-config": "^0.74.83",
-    "@release-it/conventional-changelog": "^8.0.1",
+    "@release-it/keep-a-changelog": "^5.0.0",
     "@types/fast-text-encoding": "^1.0.3",
     "@types/fastestsmallesttextencoderdecoder": "^1.0.2",
     "@types/jest": "^29.5.5",
