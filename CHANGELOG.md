@@ -7,6 +7,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [1.0.0] - 2024-05-30
+
 First "official" release of `@missingcore/audio-metadata`.
 
 > This contains no breaking changes since v0.1.0.
@@ -32,5 +34,6 @@ The intial "beta" release of `@missingcore/audio-metadata`. This aims to verify 
 
 Add section to make `release-it` not complain that this is missing. 2024-05-20 is the creation data of this repository.
 
-[unreleased]: https://github.com/MissingCore/audio-metadata/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/MissingCore/audio-metadata/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/MissingCore/audio-metadata/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/MissingCore/audio-metadata/releases/tag/v0.1.0
