@@ -1,5 +1,14 @@
 # @missingcore/audio-metadata
 
+<p>
+  <a aria-label="NPM version" href="https://www.npmjs.com/package/@missingcore/audio-metadata">
+    <img alt="" src="https://img.shields.io/npm/v/@missingcore/audio-metadata.svg?style=for-the-badge&labelColor=000000">
+  </a>
+  <a aria-label="License" href="https://github.com/MissingCore/audio-metadata/blob/main/LICENSE">
+    <img alt="" src="https://img.shields.io/npm/l/@missingcore/audio-metadata.svg?style=for-the-badge&labelColor=000000">
+  </a>
+</p>
+
 An audio file metadata reader built for **React Native** (mobile only) supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
 
 > [!NOTE]  
@@ -28,7 +37,7 @@ Regardless of which file system library you use, they perform relatively the sam
 ### With `expo-file-system`
 
 ```sh
-expo install @missingcore/audio-metadata expo-file-system
+npx expo install @missingcore/audio-metadata expo-file-system
 ```
 
 ### With `@dr.pogodin/react-native-fs`
