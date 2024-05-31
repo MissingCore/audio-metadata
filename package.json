@@ -1,6 +1,6 @@
 {
   "name": "@missingcore/audio-metadata",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "An audio file metadata reader built for React Native.",
   "main": "lib/module/index",
   "module": "lib/module/index",
