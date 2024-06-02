@@ -35,11 +35,8 @@ export class FileReader {
 
   /** Returns an array of bytes from the buffer. */
   read(length: number) {
-    const chunk: number[] = [];
-    for (let i = 0; i < length; i++) {
-      if (this.#areWeDone()) break;
-      chunk.push(this.buffer.readUInt8());
-    }
+    const chunk: number[] = this.buffer.readBytes(length);
+    if (chunk.length !== length) this.#areWeDone();
     return chunk;
   }
 

@@ -7,6 +7,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### 📈 Performance fixes
+
+- Reduced the duration of heavy reads (ie: getting the `artwork` metadata) by **up to ~60%** from switching `FileReader.read()` to use `Buffer.readBytes()` instead of `Buffer.readUInt8()` in a for-loop.
+
 ## [1.0.0] - 2024-05-30
 
 First "official" release of `@missingcore/audio-metadata`.

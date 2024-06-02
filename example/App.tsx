@@ -21,7 +21,7 @@ import { isFulfilled, isRejected } from './utils/promise';
 const queryClient = new QueryClient();
 
 /** Whether we want to also get the track artwork (will make things a lot slower). */
-const withArtwork = false;
+const withArtwork = true;
 
 async function getTracks() {
   const start = performance.now();
