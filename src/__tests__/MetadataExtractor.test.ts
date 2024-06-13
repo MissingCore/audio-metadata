@@ -5,8 +5,8 @@ import { FileError } from '../utils/errors';
 /** Mock `@dr.pogodin/react-native-fs` with Node.js' `fs/promises` library. */
 jest.mock('@dr.pogodin/react-native-fs', () => {
   const { Buffer } = require('node:buffer');
-  const { openSync, read } = require('fs');
-  const { access, stat } = require('fs/promises');
+  const { openSync, read } = require('node:fs');
+  const { access, stat } = require('node:fs/promises');
 
   return {
     // `access` returns `undefined` on success.

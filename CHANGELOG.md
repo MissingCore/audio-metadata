@@ -10,6 +10,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Changed
 
 - Add email to `LICENSE`.
+- Prefix built-in node modules with `node:` (ie: `node:fs`) instead of its unprefixed variant (ie: `fs`).
 
 ## [1.1.0] - 2024-06-02
 
