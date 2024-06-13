@@ -7,6 +7,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### Changed
+
+- Add email to `LICENSE`.
+
 ## [1.1.0] - 2024-06-02
 
 ### 📈 Performance fixes

@@ -1,13 +1,7 @@
 # @missingcore/audio-metadata
 
-<p>
-  <a aria-label="NPM version" href="https://www.npmjs.com/package/@missingcore/audio-metadata">
-    <img alt="" src="https://img.shields.io/npm/v/@missingcore/audio-metadata.svg?style=for-the-badge&labelColor=000000">
-  </a>
-  <a aria-label="License" href="https://github.com/MissingCore/audio-metadata/blob/main/LICENSE">
-    <img alt="" src="https://img.shields.io/npm/l/@missingcore/audio-metadata.svg?style=for-the-badge&labelColor=000000">
-  </a>
-</p>
+[![NPM Version][NPM Version]][NPM Version-url]
+[![License][License]][License-url]
 
 An audio file metadata reader built for **React Native** (mobile only) supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
 
@@ -97,3 +91,11 @@ type AudioMetadata = {
 ## License
 
 [MIT](./LICENSE)
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
+[License]: https://img.shields.io/npm/l/@missingcore/audio-metadata.svg?style=for-the-badge&labelColor=000000
+[License-url]: https://github.com/MissingCore/audio-metadata/blob/main/LICENSE
+[NPM Version]: https://img.shields.io/npm/v/@missingcore/audio-metadata.svg?style=for-the-badge&labelColor=000000
+[NPM Version-url]: https://www.npmjs.com/package/@missingcore/audio-metadata
