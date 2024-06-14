@@ -10,10 +10,12 @@ An audio file metadata reader built for **React Native** (mobile only) supportin
 
 ## Supported Files
 
-| Extension | Format              | Additional Information                                                                                   |
-| --------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| `.flac`   | - FLAC              |                                                                                                          |
-| `.mp3`    | - ID3v1<br/>- ID3v2 | - Unsynchronisation supported<br/>- Tag at end of file supported (ID3v2.4)<br/>- All other flags ignored |
+| Extension | Format              | Additional Information                                                                                     |
+| --------- | ------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `.flac`   | - FLAC              |                                                                                                            |
+| `.mp3`    | - ID3v1<br/>- ID3v2 | - Unsynchronisation supported*<br/>- Tag at end of file supported (ID3v2.4)*<br/>- All other flags ignored |
+
+> \* Currently untested as I have no `.mp3` files that meets those conditions. Feel free to submit an issue to tell me if it works or doesn't work.
 
 ## Installation
 
