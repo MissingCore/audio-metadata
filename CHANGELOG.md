@@ -7,6 +7,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [1.1.1] - 2024-06-14
+
 ### Changed
 
 - Add email to `LICENSE`.
@@ -45,7 +47,8 @@ The intial "beta" release of `@missingcore/audio-metadata`. This aims to verify 
 
 Add section to make `release-it` not complain that this is missing. 2024-05-20 is the creation data of this repository.
 
-[unreleased]: https://github.com/MissingCore/audio-metadata/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/MissingCore/audio-metadata/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/MissingCore/audio-metadata/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/MissingCore/audio-metadata/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MissingCore/audio-metadata/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/MissingCore/audio-metadata/releases/tag/v0.1.0
