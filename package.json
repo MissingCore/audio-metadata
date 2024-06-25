@@ -53,6 +53,9 @@
     "url": "https://github.com/MissingCore/audio-metadata/issues"
   },
   "homepage": "https://github.com/MissingCore/audio-metadata#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "fast-text-encoding": "^1.0.6",
     "fastestsmallesttextencoderdecoder": "^1.0.22"
