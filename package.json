@@ -29,7 +29,7 @@
     "example": "pnpm --filter @missingcore/audio-metadata-example run",
     "bootstrap": "pnpm install && pnpm example android",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest --coverage",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",
     "prepare": "bob build",
@@ -100,6 +100,12 @@
       "optional": true
     },
     "expo-file-system": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-native": {
       "optional": true
     }
   },

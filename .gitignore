@@ -79,3 +79,4 @@ lib/
 
 # User files
 TODO.md
+coverage/
