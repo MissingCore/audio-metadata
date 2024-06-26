@@ -20,6 +20,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - Removed space between organization name in `LICENSE`.
 - `react` & `react-native` are now optional peer dependencies due to adding support for running this package in Node.js.
+- Removed `fastestsmallesttextencoderdecoder` dependency as it was replaced with `fast-text-encoding` due to not working in React Native 0.74.
 
 ## [1.1.1] - 2024-06-14
 

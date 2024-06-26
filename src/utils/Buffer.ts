@@ -1,6 +1,5 @@
 /* eslint-disable no-bitwise */
 import 'fast-text-encoding';
-// import { decode } from 'fastestsmallesttextencoderdecoder';
 
 /**
  * List of character set encodings.
