@@ -7,6 +7,8 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-06-26
+
 ### ❗ Breaking
 
 - Set minimum Node.js version that this package supports to be 18 (technically shouldn't be breaking as it should be enforced by having the React Native 0.74 dependency).
@@ -62,7 +64,8 @@ The intial "beta" release of `@missingcore/audio-metadata`. This aims to verify 
 
 Add section to make `release-it` not complain that this is missing. 2024-05-20 is the creation data of this repository.
 
-[unreleased]: https://github.com/MissingCore/audio-metadata/compare/v1.1.1...HEAD
+[unreleased]: https://github.com/MissingCore/audio-metadata/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MissingCore/audio-metadata/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/MissingCore/audio-metadata/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/MissingCore/audio-metadata/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MissingCore/audio-metadata/compare/v0.1.0...v1.0.0
