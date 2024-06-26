@@ -26,8 +26,9 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "pnpm --filter @missingcore/audio-metadata-example run",
-    "bootstrap": "pnpm install && pnpm example android",
+    "rnfs-example": "pnpm --filter react-native-fs-example run",
+    "efs-example": "pnpm --filter expo-file-system-example run",
+    "bootstrap": "pnpm install && pnpm rnfs-example android",
     "typecheck": "tsc --noEmit",
     "test": "jest --coverage",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
