@@ -2,38 +2,6 @@ import { getAudioMetadata } from '../MetadataExtractor';
 import type { MetadataKeys } from '../MetadataExtractor.types';
 import { FileError } from '../utils/errors';
 
-/** Mock `@dr.pogodin/react-native-fs` with Node.js' `fs/promises` library. */
-jest.mock('@dr.pogodin/react-native-fs', () => {
-  const { Buffer } = require('node:buffer');
-  const { openSync, read } = require('node:fs');
-  const { access, stat } = require('node:fs/promises');
-
-  return {
-    // `access` returns `undefined` on success.
-    exists: async (path: string) => !(await access(path)),
-    read: async (
-      path: string,
-      length = 0,
-      position = 0,
-      encodingOrOptions: 'ascii' | 'base64' | 'utf8' = 'base64'
-    ) => {
-      const fd = openSync(path, 'r');
-      const dataBuffer = Buffer.alloc(length);
-      return new Promise((resolve, reject) => {
-        read(
-          fd,
-          { buffer: dataBuffer, length, position },
-          (err: unknown, _bytesRead: number, buffer: Buffer) => {
-            if (err) reject(err);
-            resolve(buffer.toString(encodingOrOptions));
-          }
-        );
-      });
-    },
-    stat: async (path: string) => ({ path, ...(await stat(path)) }),
-  };
-});
-
 /**
  * Wraps `getAudioMetadata` and handles getting the `uri` from a file
  * name (ie: `Silence.mp3`).

@@ -1,7 +1,7 @@
 module.exports = {
   preset: 'react-native',
   modulePathIgnorePatterns: [
-    '<rootDir>/example/node_modules',
+    '<rootDir>/examples/node_modules',
     '<rootDir>/lib/',
   ],
   verbose: true,

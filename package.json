@@ -26,10 +26,12 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "pnpm --filter @missingcore/audio-metadata-example run",
-    "bootstrap": "pnpm install && pnpm example android",
+    "rnfs-example": "pnpm --filter react-native-fs-example run",
+    "efs-example": "pnpm --filter expo-file-system-example run",
+    "node-example": "pnpm --filter node-js-example run",
+    "bootstrap": "pnpm install && pnpm rnfs-example android",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest --coverage",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli lib",
     "prepare": "bob build",
@@ -100,6 +102,12 @@
       "optional": true
     },
     "expo-file-system": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-native": {
       "optional": true
     }
   },

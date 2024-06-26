@@ -1,4 +1,5 @@
 import ExpoFileSystem from './expo-file-system';
+import NodeFS from './node-fs';
 import ReactNativeFS from './react-native-fs';
 
 import { DependencyError } from '../utils/errors';
@@ -21,6 +22,10 @@ export async function getFileStat(fileUri: string): Promise<StatResult> {
     const result = await ExpoFileSystem.getInfoAsync(fileUri, { size: true });
     if (!result.exists) return { exists: false };
     return { exists: true, size: result.size };
+  } else if (NodeFS) {
+    if (!(await NodeFS.exists(fileUri))) return { exists: false };
+    const { size } = await NodeFS.stat(fileUri);
+    return { exists: true, size };
   } else {
     throw new DependencyError();
   }
@@ -43,6 +48,8 @@ export async function read(fileUri: string, length: number, position: number) {
       length,
       position,
     });
+  } else if (NodeFS) {
+    return NodeFS.read(fileUri, length, position, 'base64');
   } else {
     throw new DependencyError();
   }

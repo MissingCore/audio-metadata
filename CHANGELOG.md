@@ -7,6 +7,20 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 ## [Unreleased]
 
+### ❗ Breaking
+
+- Set minimum Node.js version that this package supports to be 18 (technically shouldn't be breaking as it should be enforced by having the React Native 0.74 dependency).
+
+### Added
+
+- Node.js support based on the mock we used in our tests.
+- Additional examples for testing the app in the different configurations we support (Node.js, React Native w/ `expo-file-system`, React Native w/ `@dr.pogodin/react-native-fs`)
+
+### Changed
+
+- Removed space between organization name in `LICENSE`.
+- `react` & `react-native` are now optional peer dependencies due to adding support for running this package in Node.js.
+
 ## [1.1.1] - 2024-06-14
 
 ### Changed

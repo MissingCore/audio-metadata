@@ -24,4 +24,4 @@ Please check the appropriate items below if they apply to your diff.
 
 - [ ] Documentation is up to date to reflect these changes (ie: `CHANGELOG.md` & `README.md`).
 - [ ] Code is covered by new tests and passes existing tests.
-- [ ] This diff will work correctly for `pnpm example android:prod`.
+- [ ] This diff will work correctly for `pnpm rnfs-example android:prod`.

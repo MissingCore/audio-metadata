@@ -42,10 +42,10 @@ android.iml
 
 # Cocoapods
 #
-example/ios/Pods
+examples/**/ios/Pods
 
 # Ruby
-example/vendor/
+examples/**/vendor/
 
 # node.js
 #
@@ -79,3 +79,4 @@ lib/
 
 # User files
 TODO.md
+coverage/
