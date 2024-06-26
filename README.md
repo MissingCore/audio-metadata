@@ -3,10 +3,12 @@
 [![NPM Version][NPM Version]][NPM Version-url]
 [![License][License]][License-url]
 
-An audio file metadata reader built for **React Native** (mobile only) supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
+An audio file metadata reader built primarily for **React Native** (mobile only) supporting tags used in [`MissingCore/Music`](https://github.com/MissingCore/Music).
 
 > [!NOTE]  
 > Supports React Native's **"New Architecture"**.
+>
+> Also works in a plain Node.js environment.
 
 ## Supported Files
 
@@ -19,6 +21,8 @@ An audio file metadata reader built for **React Native** (mobile only) supportin
 
 ## Installation
 
+### React Native
+
 > [!IMPORTANT]  
 > Currently, this library only supports `React Native 0.74.0` or `Expo SDK 51` and newer due to the introduction of native `atob()` & `btoa()` support.
 >
@@ -30,17 +34,21 @@ This library supports using either [`expo-file-system`](https://docs.expo.dev/ve
 
 Regardless of which file system library you use, they perform relatively the same.
 
-### With `expo-file-system`
+#### With `expo-file-system`
 
 ```sh
 npx expo install @missingcore/audio-metadata expo-file-system
 ```
 
-### With `@dr.pogodin/react-native-fs`
+#### With `@dr.pogodin/react-native-fs`
 
 ```sh
 npm install @missingcore/audio-metadata @dr.pogodin/react-native-fs
 ```
+
+### Node.js
+
+This library supports Node.js as it supplements the file system operations by using native Node.js modules.
 
 ## Usage
 
