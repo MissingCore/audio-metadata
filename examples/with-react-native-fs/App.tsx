@@ -21,7 +21,7 @@ import { isFulfilled, isRejected } from './utils/promise';
 const queryClient = new QueryClient();
 
 /** Whether we want to also get the track artwork (will make things a lot slower). */
-const withArtwork = true;
+const withArtwork = false;
 
 async function getTracks() {
   const start = performance.now();
@@ -125,13 +125,16 @@ export function App() {
 
   return (
     <>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       <View style={[styles.container, { paddingTop: insets.top + 64 }]}>
         <Text style={styles.heading}>
           Information about all the audio files `@missingcore/audio-metadata`
           can identify.
         </Text>
         <Text style={styles.text}>Task completed in {data.duration}s.</Text>
+        <Text style={styles.text}>
+          Total Tracks Found: {data.tracks.length}
+        </Text>
 
         <FlashList
           estimatedItemSize={166}

@@ -102,6 +102,20 @@ android {
             }
         }
     }
+    /**
+     * https://developer.android.com/build/configure-apk-splits
+     *
+     *  - https://github.com/react-native-community/discussions-and-proposals/issues/602
+     *  - https://reactnative.dev/docs/signed-apk-android#publishing-to-other-stores
+     */
+    splits {
+        abi {
+            reset()
+            enable true
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            universalApk true  // If true, also generate a universal APK
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')

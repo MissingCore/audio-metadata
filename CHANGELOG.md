@@ -11,6 +11,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - AAC support with `.mp4` & `.m4a` file extensions.
 
+### Changed
+
+- Enabled split apks, proguard, and shrink resources in React Native examples.
+
 ## [1.2.0] - 2024-06-26
 
 ### ❗ Breaking
