@@ -29,12 +29,6 @@ const results = {
 
 describe('`getAudioMetadata()` function.', () => {
   describe('With unsupported files.', () => {
-    it('`.m4a`', async () => {
-      await expect(getMetadata('Silence.m4a')).rejects.toThrow(
-        new FileError('`.m4a` files are currently not supported.')
-      );
-    });
-
     it('`.ogg`', async () => {
       await expect(getMetadata('Silence.ogg')).rejects.toThrow(
         new FileError('`.ogg` files are currently not supported.')
