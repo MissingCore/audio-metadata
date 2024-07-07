@@ -147,5 +147,36 @@ describe('`getAudioMetadata()` function.', () => {
         );
       });
     });
+
+    describe('AAC Files', () => {
+      it('Supports `.m4a`.', async () => {
+        await expect(getMetadata('Silence.m4a')).resolves.toEqual({
+          fileType: 'm4a',
+          format: 'M4A  (512)',
+          metadata: results.base,
+        });
+      });
+
+      it('Supports `.mp4`.', async () => {
+        await expect(getMetadata('Silence.mp4')).resolves.toEqual({
+          fileType: 'mp4',
+          format: 'isom (512)',
+          metadata: results.base,
+        });
+      });
+
+      it('`artwork` is a base64 PNG string.', async () => {
+        const data = await getMetadata('Silence.mp4', ['artwork']);
+        expect(isBase64Image(data.metadata.artwork)).toBeTruthy();
+      });
+
+      it('Contains UTF-8 text.', async () => {
+        await expect(getMetadata('Silence-utf8.mp4')).resolves.toEqual({
+          fileType: 'mp4',
+          format: 'isom (512)',
+          metadata: results.utf8,
+        });
+      });
+    });
   });
 });
