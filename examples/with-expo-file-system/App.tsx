@@ -31,13 +31,18 @@ async function getTracks() {
     first: 0,
   });
 
-  const mp3Files = (
+  const audioFiles = (
     await MediaLibrary.getAssetsAsync({
+      // `.mp4` & `.m4a` is classified as audio by Android
+      //  - https://developer.android.com/media/platform/supported-formats#audio-formats
       mediaType: 'audio',
       first: totalCount,
     })
-  ).assets.filter((a) =>
-    AudioFileTypes.some((ext) => a.filename.endsWith(`.${ext}`))
+  ).assets.filter(
+    (a) =>
+      AudioFileTypes.some((ext) => a.filename.endsWith(`.${ext}`)) &&
+      // Limit media to those in the `Music` folder on our device.
+      a.uri.startsWith('file:///storage/emulated/0/Music/')
   );
 
   const wantedTags = withArtwork
@@ -45,7 +50,7 @@ async function getTracks() {
     : (['album', 'artist', 'name', 'track', 'year'] as const);
 
   const tracksMetadata = await Promise.allSettled(
-    mp3Files.map(async ({ id, uri }) => {
+    audioFiles.map(async ({ id, uri }) => {
       const data = await getAudioMetadata(uri, wantedTags);
       return { format: data.format, id, ...data.metadata };
     })
@@ -72,7 +77,9 @@ export default function RootLayer() {
 
 export function App() {
   const insets = useSafeAreaInsets();
-  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions({
+    granularPermissions: ['audio'],
+  });
   const [hasPermissions, setHasPermissions] = useState(false);
 
   const { isPending, error, data } = useQuery({
