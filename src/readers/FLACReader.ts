@@ -85,11 +85,8 @@ export class FLACReader extends FileReader {
     // We need to make sure `this.finished` is `false` when reading this
     // file as we don't know the amount of space Metadata Blocks take up
     // cumulatively in the file unlike with ID3.
-    if (isLast || Object.keys(this.tags).length === this.wantedTags.length) {
-      this.finished = true;
-    } else {
-      this.finished = false;
-    }
+    if (isLast || this.shouldFinishEarly()) this.finished = true;
+    else this.finished = false;
   }
 
   /**

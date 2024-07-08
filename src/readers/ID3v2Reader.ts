@@ -177,9 +177,7 @@ export class ID3v2Reader extends FileReader {
     }
 
     // Exit early once we have all the data needed.
-    if (Object.keys(this.tags).length === this.wantedTags.length) {
-      this.finished = true;
-    }
+    if (this.shouldFinishEarly()) this.finished = true;
   }
 
   /**

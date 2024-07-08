@@ -109,11 +109,8 @@ export class MP4Reader extends FileReader {
     // We need to make sure `this.finished` is `false` when reading this
     // file as we don't know the amount of space Atoms take up cumulatively
     // in the file unlike with ID3.
-    if (Object.keys(this.tags).length === this.wantedTags.length) {
-      this.finished = true;
-    } else {
-      this.finished = false;
-    }
+    if (type === 'moov' || this.shouldFinishEarly()) this.finished = true;
+    else this.finished = false;
   }
 
   /**
@@ -148,7 +145,8 @@ export class MP4Reader extends FileReader {
     while (true) {
       const { isLast, type, length } = this.processAtomContainerHeader();
 
-      if (isLast) break;
+      // Break out of loop early if we've got all the metadata we needed.
+      if (isLast || this.shouldFinishEarly()) break;
 
       if (ContainerAtoms.has(type)) {
         // We want to ignore the next 4 bytes as it contains version info.
