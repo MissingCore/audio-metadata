@@ -11,6 +11,10 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 
 - AAC support with `.mp4` & `.m4a` file extensions.
 
+### Fixed
+
+- Invalid `ID3v2` `artwork` base64 string value.
+
 ### Changed
 
 - Enabled split apks, proguard, and shrink resources in React Native examples.
