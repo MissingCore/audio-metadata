@@ -2,6 +2,7 @@ import type { AudioFileType } from './constants';
 import type { MetadataKeys, MetadataResponse } from './MetadataExtractor.types';
 import { FLACReader } from './readers/FLACReader';
 import { readMP3Metadata } from './readers/ID3Reader';
+import { MP4Reader } from './readers/MP4Reader';
 import { FileError } from './utils/errors';
 
 /**
@@ -19,6 +20,8 @@ export async function getAudioMetadata<TOptions extends MetadataKeys>(
     data = await new FLACReader(uri, options).getMetadata();
   } else if (extension === 'mp3') {
     data = await readMP3Metadata(uri, options);
+  } else if (extension === 'mp4' || extension === 'm4a') {
+    data = await new MP4Reader(uri, options).getMetadata();
   } else {
     throw new FileError(`\`.${extension}\` files are currently not supported.`);
   }

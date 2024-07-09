@@ -6,7 +6,7 @@
     "test": "tsx index.ts"
   },
   "devDependencies": {
-    "tsx": "^4.15.7"
+    "tsx": "^4.16.2"
   },
   "private": true
 }

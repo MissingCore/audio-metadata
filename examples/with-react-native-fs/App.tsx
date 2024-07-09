@@ -14,14 +14,24 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import type { AudioFileType } from '@missingcore/audio-metadata';
 import { AudioFileTypes, getAudioMetadata } from '@missingcore/audio-metadata';
 
 import { isFulfilled, isRejected } from './utils/promise';
 
 const queryClient = new QueryClient();
 
-/** Whether we want to also get the track artwork (will make things a lot slower). */
-const withArtwork = true;
+/*
+  Configurations for example app. Options we can change:
+    - Whether artwork is also fetched.
+    - Cap on the number of tracks read.
+    - Limit what extensions we care about.
+*/
+const AppConfig = {
+  withArtwork: false,
+  trackLimit: 50 as number | undefined,
+  extensions: ['m4a', 'mp4'] as AudioFileType[],
+};
 
 async function getTracks() {
   const start = performance.now();
@@ -31,21 +41,33 @@ async function getTracks() {
     first: 0,
   });
 
-  const mp3Files = (
+  const usedExtensions =
+    AppConfig.extensions.length > 0 ? AppConfig.extensions : AudioFileTypes;
+
+  let audioFiles = (
     await MediaLibrary.getAssetsAsync({
+      // `.mp4` & `.m4a` is classified as audio by Android
+      //  - https://developer.android.com/media/platform/supported-formats#audio-formats
       mediaType: 'audio',
       first: totalCount,
     })
-  ).assets.filter((a) =>
-    AudioFileTypes.some((ext) => a.filename.endsWith(`.${ext}`))
+  ).assets.filter(
+    (a) =>
+      usedExtensions.some((ext) => a.filename.endsWith(`.${ext}`)) &&
+      // Limit media to those in the `Music` folder on our device.
+      a.uri.startsWith('file:///storage/emulated/0/Music/')
   );
 
-  const wantedTags = withArtwork
+  if (AppConfig.trackLimit) {
+    audioFiles = audioFiles.slice(0, AppConfig.trackLimit);
+  }
+
+  const wantedTags = AppConfig.withArtwork
     ? (['album', 'artist', 'artwork', 'name', 'track', 'year'] as const)
     : (['album', 'artist', 'name', 'track', 'year'] as const);
 
   const tracksMetadata = await Promise.allSettled(
-    mp3Files.map(async ({ id, uri }) => {
+    audioFiles.map(async ({ id, uri }) => {
       const data = await getAudioMetadata(uri, wantedTags);
       return { format: data.format, id, ...data.metadata };
     })
@@ -71,8 +93,9 @@ export default function RootLayer() {
 }
 
 export function App() {
-  const insets = useSafeAreaInsets();
-  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+  const [permissionResponse, requestPermission] = MediaLibrary.usePermissions({
+    granularPermissions: ['audio'],
+  });
   const [hasPermissions, setHasPermissions] = useState(false);
 
   const { isPending, error, data } = useQuery({
@@ -95,63 +118,79 @@ export function App() {
 
   if (isPending) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top + 64 }]}>
+      <Container>
         <Text style={styles.heading}>Loading tracks...</Text>
-      </View>
+      </Container>
     );
   } else if (error) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top + 64 }]}>
+      <Container>
         <Text style={styles.heading}>An error was encountered:</Text>
         <Text style={styles.text}>{error.message}</Text>
-      </View>
+      </Container>
     );
   } else if (!hasPermissions) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top + 64 }]}>
+      <Container>
         <Text style={styles.heading}>
           Read permissions for media content was not granted.
         </Text>
-      </View>
+      </Container>
     );
   }
 
-  return (
-    <>
-      <StatusBar style="auto" />
-      <View style={[styles.container, { paddingTop: insets.top + 64 }]}>
-        <Text style={styles.heading}>
-          Information about all the audio files `@missingcore/audio-metadata`
-          can identify.
-        </Text>
-        <Text style={styles.text}>Task completed in {data.duration}s.</Text>
+  const properlyTagged = data.tracks.map(
+    ({ name, artist }) => !!name && !!artist
+  ).length;
 
-        <FlashList
-          estimatedItemSize={166}
-          data={data.tracks}
-          keyExtractor={({ id }) => id}
-          renderItem={({ item }) => (
-            <View style={styles.metadataContainer}>
-              <View style={styles.image}>
-                <Image
-                  source={item.artwork}
-                  contentFit="cover"
-                  style={styles.image}
-                />
-              </View>
-              <View style={styles.infoContainer}>
-                <Text style={styles.bold}>{item.format}</Text>
-                <Text numberOfLines={1}>{item.name}</Text>
-                <Text numberOfLines={1}>{item.artist}</Text>
-                {item.album && <Text numberOfLines={1}>{item.album}</Text>}
-                {item.track && <Text>Track {item.track}</Text>}
-                {item.year && <Text>({item.year})</Text>}
-              </View>
+  return (
+    <Container>
+      <Text style={styles.heading}>
+        Information about all the audio files `@missingcore/audio-metadata` can
+        identify.
+      </Text>
+      <Text style={styles.text}>Task completed in {data.duration}s.</Text>
+      <Text style={styles.text}>Total Tracks Found: {data.tracks.length}</Text>
+      <Text style={styles.text}>
+        Properly Tagged Tracks (has `title` & `artist` fields): {properlyTagged}
+      </Text>
+      <Text style={styles.heading}>Using `react-native-fs`</Text>
+
+      <FlashList
+        estimatedItemSize={166}
+        data={data.tracks}
+        keyExtractor={({ id }) => id}
+        renderItem={({ item }) => (
+          <View style={styles.metadataContainer}>
+            <View style={styles.image}>
+              <Image
+                source={item.artwork}
+                contentFit="cover"
+                style={styles.image}
+              />
             </View>
-          )}
-        />
-      </View>
-    </>
+            <View style={styles.infoContainer}>
+              <Text style={styles.bold}>{item.format}</Text>
+              <Text numberOfLines={1}>{item.name}</Text>
+              <Text numberOfLines={1}>{item.artist}</Text>
+              {item.album && <Text numberOfLines={1}>{item.album}</Text>}
+              {item.track && <Text>Track {item.track}</Text>}
+              {item.year && <Text>({item.year})</Text>}
+            </View>
+          </View>
+        )}
+      />
+    </Container>
+  );
+}
+
+function Container({ children }: { children: React.ReactNode }) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[styles.container, { paddingTop: insets.top + 64 }]}>
+      <StatusBar style="dark" />
+      {children}
+    </View>
   );
 }
 

@@ -109,6 +109,14 @@ export class FileReader {
     ) as MetadataExcerpt<typeof this.wantedTags>;
   }
 
+  /**
+   * Returns a boolean if we've found all the metadata we wanted. Useful
+   * for exiting early.
+   */
+  shouldFinishEarly() {
+    return Object.keys(this.tags).length === this.wantedTags.length;
+  }
+
   /** Checks if we reached the end of the buffer and updates `finished` if we are. */
   #areWeDone() {
     if (!this.buffer.eof) return false;
