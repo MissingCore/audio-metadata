@@ -255,7 +255,7 @@ export class ID3v2Reader extends FileReader {
       ? this.unsynchBuffer(this.buffer.position, frameSize)
       : frameSize;
 
-    this.skip(1);
+    const [encoding] = this.read(1);
     let pictureDataSize = newFrameSize - 1;
 
     let mimeType: string | undefined;
@@ -278,7 +278,7 @@ export class ID3v2Reader extends FileReader {
     }
 
     // Get description (field is of unknown length & ends with a `null`)
-    const description = this.readTilNull();
+    const description = this.readTilNull(encoding as Encoding);
     pictureDataSize -= description.length;
 
     const pictureData = this.read(pictureDataSize);

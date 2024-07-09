@@ -1,3 +1,4 @@
+import type { Encoding } from './Buffer';
 import { Buffer } from './Buffer';
 import { arrayIncludes } from './object';
 import { read } from '../libs/fs';
@@ -41,13 +42,22 @@ export class FileReader {
   }
 
   /** Read buffer until we hit a `null`. */
-  readTilNull() {
-    let byte: number | null = null;
+  readTilNull(encoding: Encoding = 0) {
     const chunk: number[] = [];
-    while (byte !== 0) {
+    // Make sure we take encoding into account as we can terminate either
+    // on a `0` or `00`.
+    const twoByteTermination = encoding === 1 || encoding === 2;
+    while (true) {
       if (this.#areWeDone()) break;
-      byte = this.buffer.readUInt8();
-      chunk.push(byte);
+      if (twoByteTermination) {
+        const bytes = this.buffer.readBytes(2);
+        chunk.push(...bytes);
+        if (bytes[0] === 0 && bytes[1] === 0) break;
+      } else {
+        const byte = this.buffer.readUInt8();
+        chunk.push(byte);
+        if (byte === 0) break;
+      }
     }
     return chunk;
   }
