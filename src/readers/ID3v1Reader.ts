@@ -1,3 +1,4 @@
+import type { MetadataKey } from '../MetadataExtractor.types';
 import { getFileStat } from '../libs/fs';
 import { Buffer } from '../utils/Buffer';
 import { FileError } from '../utils/errors';
@@ -52,12 +53,20 @@ export class ID3v1Reader extends FileReader {
    *  - [1 Byte] Genre
    */
   processData() {
-    this.tags.name = Buffer.bytesToString(this.read(30)) || undefined;
-    this.tags.artist = Buffer.bytesToString(this.read(30)) || undefined;
-    this.tags.album = Buffer.bytesToString(this.read(30)) || undefined;
-    this.tags.year = Buffer.bytesToString(this.read(4)) || undefined;
+    this.tags.name = this.getWantedData('name', this.read(30));
+    this.tags.artist = this.getWantedData('artist', this.read(30));
+    this.tags.album = this.getWantedData('album', this.read(30));
+    this.tags.year = this.getWantedData('year', this.read(4));
     const _comment = this.read(30);
     this.version = _comment[28] === 0 && _comment[29] !== 0 ? '1.1' : '1';
-    this.tags.track = this.version === '1.1' ? `${_comment[29]}` : undefined;
+    this.tags.track = undefined;
+    if (this.wantedTags.includes('track') && this.version === '1.1') {
+      this.tags.track = `${_comment[29]}`;
+    }
+  }
+
+  getWantedData(key: MetadataKey, data: number[]) {
+    if (!this.wantedTags.includes(key)) return undefined;
+    return Buffer.bytesToString(data) || undefined;
   }
 }

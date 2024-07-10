@@ -152,7 +152,10 @@ export class MP4Reader extends FileReader {
         // We want to ignore the next 4 bytes as it contains version info.
         if (type === 'meta') this.skip(4);
         this.processAtomContainer();
-      } else if (UserDataAtomNames.includes(type as FieldName)) {
+      } else if (
+        UserDataAtomNames.includes(type as FieldName) &&
+        this.wantedTags.includes(UDTAMetadataMap[type as FieldName])
+      ) {
         // We have an APPLE annotation atom which is located in the
         // `moov.udta.meta.ilst` atom.
         this.processItemDataAtom(type as FieldName, length);

@@ -14,6 +14,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Fixed
 
 - Invalid `ID3v2` `artwork` base64 string value.
+- Excluding tags not specified in the `ID3v1Reader` (we previously returned all the ID3v1 tags as it was a simple structure, however, it interfered with our tests).
 
 ### Changed
 
