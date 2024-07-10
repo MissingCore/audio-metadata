@@ -1,6 +1,8 @@
 import { getAudioMetadata } from '@missingcore/audio-metadata';
 
-const wantedTags = ['album', 'artist', 'name', 'track', 'year'] as const;
+const wantedTags = [
+  ...['album', 'albumArtist', 'artist', 'name', 'track', 'year'],
+] as const;
 
 getAudioMetadata('../../test-audio/Silence.flac', wantedTags).then((data) =>
   console.log(data)
