@@ -12,7 +12,7 @@ import { FileReader } from '../utils/FileReader';
 
 /** Array of Vorbis Comment field names we'll support. */
 const VorbisCommentFieldNames = [
-  ...['ALBUM', 'ARTIST', 'TITLE', 'TRACKNUMBER'],
+  ...['ALBUM', 'ALBUMARTIST', 'ARTIST', 'TITLE', 'TRACKNUMBER'],
   // We'll support dates that start with the year.
   ...['DATE', 'ORIGINALDATE', 'ORIGINALYEAR'],
 ] as const;
@@ -22,6 +22,7 @@ type FieldName = (typeof VorbisCommentFieldNames)[number];
 /** Vorbis Comment Field Name Metadata Map */
 const VCFNMetadataMap: Record<FieldName, MetadataKey> = {
   ALBUM: 'album',
+  ALBUMARTIST: 'albumArtist',
   ARTIST: 'artist',
   TITLE: 'name',
   TRACKNUMBER: 'track',

@@ -104,6 +104,17 @@ export class FileReader {
       undefined,
     ]) as Array<[string, string | number | undefined]>;
 
+    // If no value for `albumArtist` is found, but we have an `artist` and
+    // `album`, fallback to `artist` value.
+    if (
+      this.wantedTags.includes('albumArtist') &&
+      !this.tags.albumArtist &&
+      this.tags.album &&
+      this.tags.artist
+    ) {
+      this.tags.albumArtist = this.tags.artist;
+    }
+
     return Object.fromEntries(
       defaultMetadata.concat(
         Object.entries(this.tags)

@@ -12,7 +12,7 @@ import { FileReader } from '../utils/FileReader';
 
 /** Array of User data atom names we'll support. */
 const UserDataAtomNames = [
-  ...['©alb', '©ART', '©nam', 'trkn', '©day', 'covr'],
+  ...['©alb', 'aART', 'albr', '©ART', '©nam', 'trkn', '©day', 'covr'],
 ] as const;
 
 type FieldName = (typeof UserDataAtomNames)[number];
@@ -20,6 +20,8 @@ type FieldName = (typeof UserDataAtomNames)[number];
 /** User data atom name Metadata Map */
 const UDTAMetadataMap: Record<FieldName, MetadataKey> = {
   '©alb': 'album',
+  'aART': 'albumArtist',
+  'albr': 'albumArtist', // `aART` is more preferred.
   '©ART': 'artist',
   '©nam': 'name',
   'trkn': 'track',

@@ -24,9 +24,9 @@ import { arrayIncludes } from '../utils/object';
 const FrameTypes = {
   text: [
     // ID3v2.2 Tag Ids
-    ...['TAL', 'TP1', 'TT2', 'TRK', 'TYE'],
+    ...['TAL', 'TP2', 'TP1', 'TT2', 'TRK', 'TYE'],
     // ID3v2.3/4 Tag Ids
-    ...['TALB', 'TPE1', 'TIT2', 'TRCK', 'TYER', 'TDRC'],
+    ...['TALB', 'TPE2', 'TPE1', 'TIT2', 'TRCK', 'TYER', 'TDRC'],
   ],
   picture: ['PIC', 'APIC'],
 } as const;
@@ -36,6 +36,7 @@ type FrameId = TextFrameId | (typeof FrameTypes.picture)[number];
 
 const FrameMetadataMap: Record<FrameId, MetadataKey> = {
   TAL: 'album',
+  TP2: 'albumArtist',
   TP1: 'artist',
   PIC: 'artwork',
   TT2: 'name',
@@ -43,6 +44,7 @@ const FrameMetadataMap: Record<FrameId, MetadataKey> = {
   TYE: 'year',
 
   TALB: 'album',
+  TPE2: 'albumArtist',
   TPE1: 'artist',
   APIC: 'artwork',
   TIT2: 'name',

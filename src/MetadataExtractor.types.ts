@@ -2,6 +2,7 @@ import type { AudioFileType } from './constants';
 
 export type AudioMetadata = {
   album: string;
+  albumArtist: string;
   artist: string;
   artwork: string;
   name: string;
