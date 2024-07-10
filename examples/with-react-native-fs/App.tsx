@@ -33,6 +33,10 @@ const AppConfig = {
   extensions: ['m4a', 'mp4'] as AudioFileType[],
 };
 
+const baseTags = [
+  ...['album', 'albumArtist', 'artist', 'name', 'track', 'year'],
+] as const;
+
 async function getTracks() {
   const start = performance.now();
 
@@ -63,8 +67,8 @@ async function getTracks() {
   }
 
   const wantedTags = AppConfig.withArtwork
-    ? (['album', 'artist', 'artwork', 'name', 'track', 'year'] as const)
-    : (['album', 'artist', 'name', 'track', 'year'] as const);
+    ? ([...baseTags, 'artwork'] as const)
+    : baseTags;
 
   const tracksMetadata = await Promise.allSettled(
     audioFiles.map(async ({ id, uri }) => {
@@ -174,6 +178,7 @@ export function App() {
               <Text numberOfLines={1}>{item.name}</Text>
               <Text numberOfLines={1}>{item.artist}</Text>
               {item.album && <Text numberOfLines={1}>{item.album}</Text>}
+              <Text numberOfLines={1}>{item.albumArtist}</Text>
               {item.track && <Text>Track {item.track}</Text>}
               {item.year && <Text>({item.year})</Text>}
             </View>
