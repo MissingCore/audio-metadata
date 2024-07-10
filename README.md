@@ -68,7 +68,8 @@ const data = await getAudioMetadata(uri, wantedTags);
       format: 'ID3v2.3',
       metadata: {
           album: 'Void';
-          artist: 'Nothing;
+          albumArtist: 'Nothing';
+          artist: 'Nothing';
           name: 'Silence';
           track: 1;
           year: 2024;
@@ -84,6 +85,7 @@ const data = await getAudioMetadata(uri, wantedTags);
 ```tsx
 type AudioMetadata = {
   album: string;
+  albumArtist: string;
   artist: string;
   artwork: string; // A base64 image string.
   name: string;

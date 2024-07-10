@@ -10,6 +10,7 @@ and this project attempts to adhere to [Semantic Versioning](https://semver.org/
 ### Added
 
 - AAC support with `.mp4` & `.m4a` file extensions.
+- Add support for new `albumArtist` field (fallbacks to `artist` if it's defined and the track belongs to an album).
 
 ### Fixed
 
