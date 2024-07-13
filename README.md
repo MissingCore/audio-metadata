@@ -57,7 +57,7 @@ This library supports Node.js as it supplements the file system operations by us
 import { getAudioMetadata } from '@missingcore/audio-metadata';
 
 const uri = 'file:///storage/emulated/0/Music/Silence.mp3';
-const wantedTags = ['album', 'artist', 'name', 'track', 'year'] as const;
+const wantedTags = ['album', 'albumArtist', 'artist', 'name', 'track', 'year'] as const;
 
 // Of course with `await`, use this inside an async function or use `Promise.then()`.
 const data = await getAudioMetadata(uri, wantedTags);
